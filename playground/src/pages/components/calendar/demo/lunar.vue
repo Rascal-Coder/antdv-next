@@ -9,10 +9,12 @@ Display lunar calendar, solar terms and other information.
 <script setup lang="ts">
 import type { CalendarProps } from 'antdv-next'
 import type { Dayjs } from 'dayjs'
+import { theme } from 'antdv-next'
 import dayjs from 'dayjs'
 import { HolidayUtil, Lunar } from 'lunar-typescript'
 import { ref } from 'vue'
 
+const { token } = theme.useToken()
 const selectDate = ref<Dayjs>(dayjs())
 const panelDate = ref<Dayjs>(dayjs())
 function getYearLabel(year: number) {
@@ -139,7 +141,7 @@ function onSelect(value, selectInfo) {
 <style scoped>
 .wrapper {
   width: 450px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid v-bind('token.colorBorder');
   border-radius: 4px;
   padding: 5px;
 }
