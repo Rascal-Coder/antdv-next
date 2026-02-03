@@ -177,13 +177,13 @@ function onSelect(value, selectInfo) {
   background: #1677ff;
   opacity: 0.8;
 }
-.current .lunar {
+/* .current .lunar {
   color: #fff;
   opacity: 0.9;
 }
 .current .weekend {
   color: #fff;
-}
+} */
 .today::before {
   border: 1px solid #1677ff;
 }
@@ -192,8 +192,11 @@ function onSelect(value, selectInfo) {
   z-index: 1;
 }
 .lunar {
-  color: rgba(0, 0, 0, 0.45);
+  color: v-bind('token.colorTextDescription');
   font-size: 12px;
+}
+.current .lunar {
+  color: v-bind('token.colorText');
 }
 .weekend {
   color: #ff4d4f;
