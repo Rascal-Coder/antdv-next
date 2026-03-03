@@ -21,17 +21,24 @@ import { convertChildrenToItems } from './hooks/useItems.ts'
 import useResizable from './hooks/useResizable.ts'
 import useResize from './hooks/useResize.ts'
 import useSizes from './hooks/useSizes.ts'
-import InternalPanel from './Panel.tsx'
+import { InternalPanel } from './Panel.tsx'
 import SplitBar from './SplitBar.tsx'
+
 import useStyle from './style'
 
+export interface InternalSplitterProps extends SplitterProps,
+  /* @vue-ignore */
+  SplitterEmitsProps {}
+
+export interface SplitterEmitsProps {}
+
 const Splitter = defineComponent<
-  SplitterProps,
+  InternalSplitterProps,
   SplitterEmits,
   string,
   SlotsType<SplitterSlots>
 >(
-  (props, { slots, emit, attrs }) => {
+  (props, { slots, attrs }) => {
     const {
       prefixCls,
       rootPrefixCls,
@@ -101,33 +108,33 @@ const Splitter = defineComponent<
 
     const onInternalResizeStart = (index: number) => {
       onOffsetStart(index)
-      emit('resizeStart', index)
+      props?.onResizeStart?.(itemPxSizes.value)
     }
 
     const onInternalResizeUpdate = (index: number, offset: number, lazyEnd?: boolean) => {
-      const nextSize = onOffsetUpdate(index, offset)
+      const nextSizes = onOffsetUpdate(index, offset)
       if (lazyEnd) {
-        emit('resizeEnd', index)
+        props?.onResizeEnd?.(nextSizes)
       }
       else {
-        emit('resize', nextSize)
+        props?.onResize?.(nextSizes)
       }
     }
 
     const onInternalResizeEnd = (lazyEnd?: boolean) => {
       onOffsetEnd()
       if (!lazyEnd) {
-        emit('resizeEnd', itemPxSizes.value)
+        props?.onResizeEnd?.(itemPxSizes.value)
       }
     }
 
     const onInternalCollapse = (index: number, type: 'start' | 'end') => {
       const nextSizes = onCollapse(index, type)
-      emit('resize', nextSizes)
-      emit('resizeEnd', nextSizes)
+      props?.onResize?.(nextSizes)
+      props?.onResizeEnd?.(nextSizes)
       const collapsed = nextSizes.map(size => Math.abs(size) < Number.EPSILON)
-      emit('collapse', collapsed, nextSizes)
-      emit('update:collapse', collapsed)
+      props?.onCollapse?.(collapsed, nextSizes)
+      props?.['onUpdate:collapse']?.(collapsed)
     }
 
     // =========== Merged Props for Semantic ==========
@@ -248,6 +255,7 @@ const Splitter = defineComponent<
                     endCollapsible={resizableInfo.endCollapsible}
                     showStartCollapsibleIcon={resizableInfo.showStartCollapsibleIcon}
                     showEndCollapsibleIcon={resizableInfo.showEndCollapsibleIcon}
+                    onDraggerDoubleClick={props?.onDraggerDoubleClick}
                     onOffsetStart={onInternalResizeStart}
                     onOffsetUpdate={(index, offsetX, offsetY, lazyEnd) => {
                       let offset = isVertical.value ? offsetY : offsetX

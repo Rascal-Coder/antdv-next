@@ -1,9 +1,10 @@
+import type { CSSObject } from '@antdv-next/cssinjs'
 import type { MenuToken } from '.'
 
 import type { GenerateStyle } from '../../theme/internal'
 import { unit } from '@antdv-next/cssinjs'
 
-const getHorizontalStyle: GenerateStyle<MenuToken> = (token) => {
+const getHorizontalStyle: GenerateStyle<MenuToken, CSSObject> = (token) => {
   const {
     componentCls,
     motionDurationSlow,
@@ -16,10 +17,10 @@ const getHorizontalStyle: GenerateStyle<MenuToken> = (token) => {
 
   return {
     [`${componentCls}-horizontal`]: {
-      'lineHeight': horizontalLineHeight,
-      'border': 0,
-      'borderBottom': `${unit(lineWidth)} ${lineType} ${colorSplit}`,
-      'boxShadow': 'none',
+      lineHeight: horizontalLineHeight,
+      border: 0,
+      borderBottom: `${unit(lineWidth)} ${lineType} ${colorSplit}`,
+      boxShadow: 'none',
 
       '&::after': {
         display: 'block',
@@ -43,10 +44,9 @@ const getHorizontalStyle: GenerateStyle<MenuToken> = (token) => {
       },
 
       [`${componentCls}-item, ${componentCls}-submenu-title`]: {
-        transition: [
-          `border-color ${motionDurationSlow}`,
-          `background-color ${motionDurationSlow}`,
-        ].join(','),
+        transition: [`border-color`, `background-color`]
+          .map(prop => `${prop} ${motionDurationSlow}`)
+          .join(','),
       },
 
       // ===================== Sub Menu =====================

@@ -62,38 +62,38 @@ export interface ComponentToken {
 
 interface DescriptionsToken extends FullToken<'Descriptions'> {}
 
-function genBorderedStyle(token: DescriptionsToken): CSSObject {
+const genBorderedStyle: GenerateStyle<DescriptionsToken, CSSObject> = (token) => {
   const { componentCls, labelBg } = token
   return {
     [`&${componentCls}-bordered`]: {
       [`> ${componentCls}-view`]: {
-        'border': `${unit(token.lineWidth)} ${token.lineType} ${token.colorSplit}`,
+        border: `${unit(token.lineWidth)} ${token.lineType} ${token.colorSplit}`,
         '> table': {
           tableLayout: 'auto',
         },
         [`${componentCls}-row`]: {
-          'borderBottom': `${unit(token.lineWidth)} ${token.lineType} ${token.colorSplit}`,
+          borderBottom: `${unit(token.lineWidth)} ${token.lineType} ${token.colorSplit}`,
           '&:first-child': {
             '> th:first-child, > td:first-child': {
               borderStartStartRadius: token.borderRadiusLG,
             },
           },
           '&:last-child': {
-            'borderBottom': 'none',
+            borderBottom: 'none',
             '> th:first-child, > td:first-child': {
               borderEndStartRadius: token.borderRadiusLG,
             },
           },
           [`> ${componentCls}-item-label, > ${componentCls}-item-content`]: {
-            'padding': `${unit(token.padding)} ${unit(token.paddingLG)}`,
-            'borderInlineEnd': `${unit(token.lineWidth)} ${token.lineType} ${token.colorSplit}`,
+            padding: `${unit(token.padding)} ${unit(token.paddingLG)}`,
+            borderInlineEnd: `${unit(token.lineWidth)} ${token.lineType} ${token.colorSplit}`,
             '&:last-child': {
               borderInlineEnd: 'none',
             },
           },
           [`> ${componentCls}-item-label`]: {
-            'color': token.colorTextSecondary,
-            'backgroundColor': labelBg,
+            color: token.colorTextSecondary,
+            backgroundColor: labelBg,
             '&::after': {
               display: 'none',
             },
@@ -118,7 +118,7 @@ function genBorderedStyle(token: DescriptionsToken): CSSObject {
   }
 }
 
-const genDescriptionStyles: GenerateStyle<DescriptionsToken> = (token) => {
+const genDescriptionStyles: GenerateStyle<DescriptionsToken, CSSObject> = (token) => {
   const {
     componentCls,
     extraColor,
@@ -171,18 +171,18 @@ const genDescriptionStyles: GenerateStyle<DescriptionsToken> = (token) => {
           paddingInlineEnd: 0,
         },
         '&:last-child': {
-          'borderBottom': 'none',
+          borderBottom: 'none',
           '> th, > td': {
             paddingBottom: 0,
           },
         },
       },
       [`${componentCls}-item-label`]: {
-        'color': token.labelColor,
-        'fontWeight': 'normal',
-        'fontSize': token.fontSize,
-        'lineHeight': token.lineHeight,
-        'textAlign': 'start',
+        color: token.labelColor,
+        fontWeight: 'normal',
+        fontSize: token.fontSize,
+        lineHeight: token.lineHeight,
+        textAlign: 'start',
 
         '&::after': {
           content: '":"',
@@ -211,8 +211,8 @@ const genDescriptionStyles: GenerateStyle<DescriptionsToken> = (token) => {
         overflowWrap: 'break-word',
       },
       [`${componentCls}-item`]: {
-        'paddingBottom': 0,
-        'verticalAlign': 'top',
+        paddingBottom: 0,
+        verticalAlign: 'top',
         '&-container': {
           display: 'flex',
           [`${componentCls}-item-label`]: {

@@ -8,7 +8,7 @@ import { ExclamationCircleFilled } from '@antdv-next/icons'
 import { clsx } from '@v-c/util'
 import { removeUndefined } from '@v-c/util/dist/props-util'
 import { omit } from 'es-toolkit'
-import { computed, defineComponent, shallowRef, watchEffect } from 'vue'
+import { computed, defineComponent, shallowRef, watch } from 'vue'
 import { useMergeSemantic, useToArr, useToProps } from '../_util/hooks'
 import { getSlotPropsFnRun, toPropsRefs } from '../_util/tools'
 import { useComponentBaseConfig } from '../config-provider/context'
@@ -30,7 +30,9 @@ export type PopconfirmClassNamesType = SemanticClassNamesType<
 
 export type PopconfirmStylesType = SemanticStylesType<PopconfirmProps, PopconfirmSemanticStyles>
 
-export interface PopconfirmProps extends Omit<PopoverProps, 'title' | 'content' | 'classes' | 'styles'> {
+export interface PopconfirmProps extends Omit<PopoverProps, 'title' | 'content' | 'classes' | 'styles'>,
+  /* @vue-ignore */
+  PopconfirmEmitsProps {
   title?: VueNode
   description?: VueNode
   disabled?: boolean
@@ -43,6 +45,7 @@ export interface PopconfirmProps extends Omit<PopoverProps, 'title' | 'content' 
   icon?: VueNode
   classes?: PopconfirmClassNamesType
   styles?: PopconfirmStylesType
+  onConfirm?: (e?: MouseEvent) => void
 }
 
 export interface PopconfirmRef extends TooltipRef {}
@@ -52,6 +55,12 @@ export interface PopconfirmEmits extends TooltipEmits {
   confirm: (e?: MouseEvent) => void
   cancel: (e?: MouseEvent) => void
   popupClick: (e: MouseEvent) => void
+}
+export interface PopconfirmEmitsProps {
+  onOpenChange?: PopconfirmEmits['openChange']
+  onConfirm?: PopconfirmEmits['confirm']
+  onCancel?: PopconfirmEmits['cancel']
+  onPopupClick?: PopconfirmEmits['popupClick']
 }
 
 export interface PopconfirmSlots {
@@ -110,11 +119,18 @@ const InternalPopconfirm = defineComponent<
     const popoverRef = shallowRef<TooltipRef>()
 
     const open = shallowRef(props.open ?? props.defaultOpen ?? false)
-    watchEffect(() => {
-      if (props.open !== undefined) {
-        open.value = props.open
-      }
-    })
+    watch(
+      () => props.open,
+      (val, prevVal) => {
+        if (val !== undefined) {
+          open.value = val
+        }
+        else if (prevVal !== undefined) {
+          open.value = false
+        }
+      },
+      { immediate: true },
+    )
 
     const settingOpen = (value: boolean, e?: MouseEvent | KeyboardEvent) => {
       if (props.open === undefined) {
@@ -126,10 +142,6 @@ const InternalPopconfirm = defineComponent<
 
     const close = (e?: MouseEvent) => {
       settingOpen(false, e)
-    }
-
-    const onConfirm = (e?: MouseEvent) => {
-      emit('confirm', e)
     }
 
     const onCancel = (e?: MouseEvent) => {
@@ -196,7 +208,7 @@ const InternalPopconfirm = defineComponent<
           okButtonProps={props.okButtonProps}
           cancelButtonProps={props.cancelButtonProps}
           close={close}
-          onConfirm={onConfirm}
+          onConfirm={props.onConfirm}
           onCancel={onCancel}
           onPopupClick={handlePopupClick}
           classes={mergedClassNames.value}

@@ -3,11 +3,22 @@ import { defineConfig } from 'tsdown'
 export default defineConfig({
   fromVite: true,
   entry: [
-    'src/index.ts',
-    'src/locale/*.ts',
+    'src/**/*.ts',
+    'src/**/*.tsx',
+    '!src/**/tests/*',
+    '!src/**/*.test.ts',
+    '!src/**/*.test.tsx',
+    '!src/index.with-locales.ts',
   ],
   unbundle: true,
   format: 'es',
+  inlineOnly: false,
+  outExtensions() {
+    return {
+      js: '.js',
+      dts: '.d.ts',
+    }
+  },
   // minify: true,
   clean: true,
   skipNodeModulesBundle: true,
@@ -19,5 +30,7 @@ export default defineConfig({
     '@antdv-next/icons',
     '@antdv-next/cssinjs/cssinjs-utils',
     '@antdv-next/cssinjs',
+    'csstype',
+    '@v-c/util',
   ],
 })

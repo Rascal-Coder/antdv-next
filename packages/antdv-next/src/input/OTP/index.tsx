@@ -37,7 +37,9 @@ export type OTPStylesType = SemanticStylesType<OTPProps, OTPSemanticStyles>
 
 export interface OTPProps extends ComponentBaseProps,
   /* @vue-ignore */
-  Omit<HTMLAttributes, 'onChange' | 'onInput'> {
+  Omit<HTMLAttributes, 'onChange' | 'onInput'>,
+  /* @vue-ignore */
+  OTPEmitsProps {
   length?: number
   variant?: Variant
   size?: SizeType
@@ -59,7 +61,11 @@ export interface OTPEmits {
   'change': (value: string) => void
   'input': (cells: string[]) => void
   'update:value': (value: string) => void
-  [key: string]: (...args: any[]) => any
+}
+export interface OTPEmitsProps {
+  onChange?: OTPEmits['change']
+  onInput?: OTPEmits['input']
+  'onUpdate:value'?: OTPEmits['update:value']
 }
 
 export interface OPTSlots {
@@ -124,9 +130,7 @@ const OTP = defineComponent<
     const initialValue = internalFormatter(props.value ?? props.defaultValue ?? '')
     const valueCells = shallowRef<string[]>(strToArr(initialValue))
     watch(() => props.value, (newValue) => {
-      if (typeof newValue !== 'undefined') {
-        valueCells.value = strToArr(internalFormatter(newValue))
-      }
+      valueCells.value = strToArr(internalFormatter(newValue ?? ''))
     })
 
     const triggerValueCellsChange = (nextValueCells: string[]) => {

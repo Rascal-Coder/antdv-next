@@ -149,8 +149,9 @@ export interface SelectProps
     | 'dropdownStyle'
     | 'classes'
     | 'styles'
-    | RcEventKeys>
-{
+    | RcEventKeys>,
+  /* @vue-ignore */
+  SelectEmitsProps {
   placement?: SelectCommonPlacement
   mode?: 'multiple' | 'tags'
   status?: InputStatus
@@ -215,7 +216,26 @@ export interface SelectEmits {
   'focus': NonNullable<VcSelectProps['onFocus']>
   'popupScroll': NonNullable<VcSelectProps['onPopupScroll']>
   'select': NonNullable<VcSelectProps['onSelect']>
-  [key: string]: (...args: any[]) => void
+}
+export interface SelectEmitsProps {
+  onOpenChange?: SelectEmits['openChange']
+  onDropdownVisibleChange?: SelectEmits['dropdownVisibleChange']
+  onClear?: SelectEmits['clear']
+  onKeydown?: SelectEmits['keydown']
+  onKeyup?: SelectEmits['keyup']
+  onBlur?: SelectEmits['blur']
+  'onUpdate:value'?: SelectEmits['update:value']
+  onClick?: SelectEmits['click']
+  onActive?: SelectEmits['active']
+  onChange?: SelectEmits['change']
+  onDeselect?: SelectEmits['deselect']
+  onInputKeydown?: SelectEmits['inputKeydown']
+  onMousedown?: SelectEmits['mousedown']
+  onMouseleave?: SelectEmits['mouseleave']
+  onMouseenter?: SelectEmits['mouseenter']
+  onFocus?: SelectEmits['focus']
+  onPopupScroll?: SelectEmits['popupScroll']
+  onSelect?: SelectEmits['select']
 }
 
 type OptionParams = Parameters<NonNullable<VcSelectProps['optionRender']>>
@@ -457,7 +477,7 @@ const Select = defineComponent<
 
       const mergedAllowClear = allowClear === true ? { clearIcon } : allowClear
 
-      const selectProps: Record<string, any> = omit(rest, ['suffixIcon', 'itemIcon', 'value', ...omitKeys])
+      const selectProps: Record<string, any> = omit(rest, ['suffixIcon', 'itemIcon', 'value', 'showSearch', ...omitKeys])
       const mergedPopupClassName = clsx(
         mergedClassNames.value?.popup?.root,
         popupClassName,
@@ -492,51 +512,51 @@ const Select = defineComponent<
       // ====================== Render =======================
       const prefix = getSlotPropsFnRun(slots, props, 'prefix')
       const onAttrs = {
-        onSelect: (...args: any[]) => {
-          emit('select', ...args)
+        onSelect: (value: any, option: any) => {
+          emit('select', value, option)
         },
-        onClear: (...args: any[]) => {
-          emit('clear', ...args)
+        onClear: () => {
+          emit('clear')
         },
-        onKeyDown: (...args: any[]) => {
-          emit('keydown', ...args)
+        onKeyDown: (e: any) => {
+          emit('keydown', e)
         },
-        onKeyUp: (...args: any[]) => {
-          emit('keyup', ...args)
+        onKeyUp: (e: any) => {
+          emit('keyup', e)
         },
-        onBlur: (...args: any[]) => {
-          emit('blur', ...args)
+        onBlur: (e: any) => {
+          emit('blur', e)
         },
-        onFocus: (...args: any[]) => {
-          emit('focus', ...args)
+        onFocus: (e: any) => {
+          emit('focus', e)
         },
-        onClick: (...args: any[]) => {
-          emit('click', ...args)
+        onClick: (e: any) => {
+          emit('click', e)
         },
-        onActive: (...args: any[]) => {
-          emit('active', ...args)
+        onActive: (value: any) => {
+          emit('active', value)
         },
-        onChange: (...args: any[]) => {
-          emit('update:value', args[0])
-          emit('change', ...args)
+        onChange: (value: any, option: any) => {
+          emit('update:value', value)
+          emit('change', value, option)
         },
-        onDeselect: (...args: any[]) => {
-          emit('deselect', ...args)
+        onDeselect: (value: any, option: any) => {
+          emit('deselect', value, option)
         },
-        onInputKeyDown: (...args: any[]) => {
-          emit('inputKeydown', ...args)
+        onInputKeyDown: (e: any) => {
+          emit('inputKeydown', e)
         },
-        onMouseDown: (...args: any[]) => {
-          emit('mousedown', ...args)
+        onMouseDown: (e: any) => {
+          emit('mousedown', e)
         },
-        onMouseLeave: (...args: any[]) => {
-          emit('mouseleave', ...args)
+        onMouseLeave: (e: any) => {
+          emit('mouseleave', e)
         },
-        onMouseEnter: (...args: any[]) => {
-          emit('mouseenter', ...args)
+        onMouseEnter: (e: any) => {
+          emit('mouseenter', e)
         },
-        onPopupScroll: (...args: any[]) => {
-          emit('popupScroll', ...args)
+        onPopupScroll: (e: any) => {
+          emit('popupScroll', e)
         },
       }
       const labelRender = slots?.labelRender ?? props?.labelRender
@@ -556,7 +576,7 @@ const Select = defineComponent<
           virtual={virtual.value}
           classNames={mergedClassNames.value}
           styles={mergedStyles.value as any}
-          showSearch={showSearch.value}
+          showSearch={props?.showSearch ?? showSearch.value}
           {...selectProps}
           maxTagPlaceholder={slots.maxTagPlaceholder}
           labelRender={labelRender}

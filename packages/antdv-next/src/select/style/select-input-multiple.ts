@@ -1,3 +1,5 @@
+import type { CSSObject } from '@antdv-next/cssinjs'
+
 import type { GenerateStyle } from '../../theme/interface'
 import type { SelectToken } from './token'
 import { resetIcon, textEllipsis } from '../../style'
@@ -5,7 +7,7 @@ import { genCssVar } from '../../theme/util/genStyleUtils'
 
 const FIXED_INPUT_MIN_WIDTH = 4
 
-const genSelectInputMultipleStyle: GenerateStyle<SelectToken> = (token) => {
+const genSelectInputMultipleStyle: GenerateStyle<SelectToken, CSSObject> = (token) => {
   const {
     componentCls,
     calc,
@@ -69,9 +71,9 @@ const genSelectInputMultipleStyle: GenerateStyle<SelectToken> = (token) => {
 
       // ======================= Content ========================
       [`${componentCls}-content`]: {
-        'flexWrap': 'wrap',
-        'alignItems': 'center',
-        'lineHeight': 1,
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        lineHeight: 1,
 
         '&-item-prefix': {
           height: varRef('font-size'),
@@ -88,16 +90,16 @@ const genSelectInputMultipleStyle: GenerateStyle<SelectToken> = (token) => {
         },
 
         [`${componentCls}-selection-item`]: {
-          'lineHeight': `calc(${varRef('multi-item-height')} - ${lineWidth} * 2)`,
-          'border': `${lineWidth} solid ${varRef('multi-item-border-color')}`,
-          'display': 'flex',
-          'marginBlock': INTERNAL_FIXED_ITEM_MARGIN,
-          'marginInlineEnd': calc(INTERNAL_FIXED_ITEM_MARGIN).mul(2).equal(),
-          'background': varRef('multi-item-background'),
-          'borderRadius': varRef('multi-item-border-radius'),
-          'paddingInlineStart': paddingXS,
-          'paddingInlineEnd': paddingXXS,
-          'transition': ['height', 'line-height', 'padding']
+          lineHeight: `calc(${varRef('multi-item-height')} - ${lineWidth} * 2)`,
+          border: `${lineWidth} solid ${varRef('multi-item-border-color')}`,
+          display: 'flex',
+          marginBlock: INTERNAL_FIXED_ITEM_MARGIN,
+          marginInlineEnd: calc(INTERNAL_FIXED_ITEM_MARGIN).mul(2).equal(),
+          background: varRef('multi-item-background'),
+          borderRadius: varRef('multi-item-border-radius'),
+          paddingInlineStart: paddingXS,
+          paddingInlineEnd: paddingXXS,
+          transition: ['height', 'line-height', 'padding']
             .map(key => `${key} ${token.motionDurationSlow}`)
             .join(','),
 
@@ -111,13 +113,13 @@ const genSelectInputMultipleStyle: GenerateStyle<SelectToken> = (token) => {
           '&-remove': {
             ...resetIcon(),
 
-            'display': 'inline-flex',
-            'alignItems': 'center',
-            'color': colorIcon,
-            'fontWeight': 'bold',
-            'fontSize': 10,
-            'lineHeight': 'inherit',
-            'cursor': 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            color: colorIcon,
+            fontWeight: 'bold',
+            fontSize: 10,
+            lineHeight: 'inherit',
+            cursor: 'pointer',
 
             [`> ${iconCls}`]: {
               verticalAlign: '-0.2em',

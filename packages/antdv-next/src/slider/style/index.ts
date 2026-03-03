@@ -1,8 +1,8 @@
 import type { CSSObject } from '@antdv-next/cssinjs'
 import type { CSSProperties } from 'vue'
 import type { FullToken, GenerateStyle, GetDefaultToken } from '../../theme/internal'
-
 import { FastColor } from '@ant-design/fast-color'
+
 import { unit } from '@antdv-next/cssinjs'
 import { resetComponent } from '../../style'
 import { genStyleHooks, mergeToken } from '../../theme/internal'
@@ -113,7 +113,7 @@ interface SliderToken extends FullToken<'Slider'> {
 }
 
 // =============================== Base ===============================
-const genBaseStyle: GenerateStyle<SliderToken> = (token) => {
+const genBaseStyle: GenerateStyle<SliderToken, CSSObject> = (token) => {
   const {
     componentCls,
     antCls,
@@ -137,12 +137,12 @@ const genBaseStyle: GenerateStyle<SliderToken> = (token) => {
     [componentCls]: {
       ...resetComponent(token),
 
-      'position': 'relative',
-      'height': controlSize,
-      'margin': `${unit(marginPart)} ${unit(marginFull)}`,
-      'padding': 0,
-      'cursor': 'pointer',
-      'touchAction': 'none',
+      position: 'relative',
+      height: controlSize,
+      margin: `${unit(marginPart)} ${unit(marginFull)}`,
+      padding: 0,
+      cursor: 'pointer',
+      touchAction: 'none',
 
       '&-vertical': {
         margin: `${unit(marginFull)} ${unit(marginPart)}`,
@@ -194,11 +194,11 @@ const genBaseStyle: GenerateStyle<SliderToken> = (token) => {
       },
 
       [`${componentCls}-handle`]: {
-        'position': 'absolute',
-        'width': handleSize,
-        'height': handleSize,
-        'outline': 'none',
-        'userSelect': 'none',
+        position: 'absolute',
+        width: handleSize,
+        height: handleSize,
+        outline: 'none',
+        userSelect: 'none',
 
         // Dragging status
         '&-dragging-delete': {
@@ -228,14 +228,16 @@ const genBaseStyle: GenerateStyle<SliderToken> = (token) => {
           outline: `0px solid transparent`,
           borderRadius: '50%',
           cursor: 'pointer',
-          transition: `
-            inset-inline-start ${motionDurationMid},
-            inset-block-start ${motionDurationMid},
-            width ${motionDurationMid},
-            height ${motionDurationMid},
-            box-shadow ${motionDurationMid},
-            outline ${motionDurationMid}
-          `,
+          transition: [
+            'inset-inline-start',
+            'inset-block-start',
+            'width',
+            'height',
+            'box-shadow',
+            'outline',
+          ]
+            .map(prop => `${prop} ${motionDurationMid}`)
+            .join(', '),
         },
 
         '&:hover, &:active, &:focus': {
@@ -279,13 +281,13 @@ const genBaseStyle: GenerateStyle<SliderToken> = (token) => {
       },
 
       [`${componentCls}-mark-text`]: {
-        'position': 'absolute',
-        'display': 'inline-block',
-        'color': token.colorTextDescription,
-        'textAlign': 'center',
-        'wordBreak': 'keep-all',
-        'cursor': 'pointer',
-        'userSelect': 'none',
+        position: 'absolute',
+        display: 'inline-block',
+        color: token.colorTextDescription,
+        textAlign: 'center',
+        wordBreak: 'keep-all',
+        cursor: 'pointer',
+        userSelect: 'none',
 
         '&-active': {
           color: token.colorText,
@@ -299,15 +301,15 @@ const genBaseStyle: GenerateStyle<SliderToken> = (token) => {
       },
 
       [`${componentCls}-dot`]: {
-        'position': 'absolute',
-        'width': dotSize,
-        'height': dotSize,
-        'backgroundColor': token.colorBgElevated,
-        'border': `${unit(handleLineWidth)} solid ${token.dotBorderColor}`,
-        'borderRadius': '50%',
-        'cursor': 'pointer',
-        'transition': `border-color ${token.motionDurationSlow}`,
-        'pointerEvents': 'auto',
+        position: 'absolute',
+        width: dotSize,
+        height: dotSize,
+        backgroundColor: token.colorBgElevated,
+        border: `${unit(handleLineWidth)} solid ${token.dotBorderColor}`,
+        borderRadius: '50%',
+        cursor: 'pointer',
+        transition: `border-color ${token.motionDurationSlow}`,
+        pointerEvents: 'auto',
 
         '&-active': {
           borderColor: token.dotActiveBorderColor,
@@ -431,13 +433,11 @@ function genDirectionStyle(token: SliderToken, horizontal: boolean): CSSObject {
   }
 }
 // ============================ Horizontal ============================
-const genHorizontalStyle: GenerateStyle<SliderToken> = (token) => {
+const genHorizontalStyle: GenerateStyle<SliderToken, CSSObject> = (token) => {
   const { componentCls, marginPartWithMark } = token
-
   return {
     [`${componentCls}-horizontal`]: {
       ...genDirectionStyle(token, true),
-
       [`&${componentCls}-with-marks`]: {
         marginBottom: marginPartWithMark,
       },
@@ -446,9 +446,8 @@ const genHorizontalStyle: GenerateStyle<SliderToken> = (token) => {
 }
 
 // ============================= Vertical =============================
-const genVerticalStyle: GenerateStyle<SliderToken> = (token) => {
+const genVerticalStyle: GenerateStyle<SliderToken, CSSObject> = (token) => {
   const { componentCls } = token
-
   return {
     [`${componentCls}-vertical`]: {
       ...genDirectionStyle(token, false),

@@ -20,6 +20,7 @@ import useFocusable from '../drawer/useFocusable.ts'
 import Skeleton from '../skeleton'
 import { usePanelRef } from '../watermark/context.ts'
 import { Footer, renderCloseIcon } from './shared.tsx'
+
 import useStyle from './style'
 
 let mousePosition: MousePosition
@@ -48,8 +49,18 @@ const defaults = {
   width: 520,
 } as any
 
+export interface InternalModalProps extends ModalProps,
+  /* @vue-ignore */
+  ModalEmitsProps {}
+
+export interface ModalEmitsProps {
+  onOk?: ModalEmits['ok']
+  onCancel?: ModalEmits['cancel']
+  'onUpdate:open'?: ModalEmits['update:open']
+}
+
 const Modal = defineComponent<
-  ModalProps,
+  InternalModalProps,
   ModalEmits,
   string,
   SlotsType<ModalSlots>
@@ -86,6 +97,7 @@ const Modal = defineComponent<
       panelRef: panelRefRef,
       focusable,
       focusTriggerAfterClose,
+      maskClosable,
     } = toPropsRefs(
       props,
       'mask',
@@ -98,6 +110,7 @@ const Modal = defineComponent<
       'panelRef',
       'focusable',
       'focusTriggerAfterClose',
+      'maskClosable',
     )
     const { modal: modalContext } = useBaseConfig()
     const modalRenderRef = computed(() => slots.modalRender || props.modalRender)
@@ -110,7 +123,7 @@ const Modal = defineComponent<
       return [closable?.afterClose, closable?.onClose]
     })
     // ============================ Mask ============================
-    const [mergedMask, maskBlurClassName] = useMergedMask(modalMask, contextMask, prefixCls)
+    const [mergedMask, maskBlurClassName, mergeMaskClosable] = useMergedMask(modalMask, contextMask, prefixCls, maskClosable)
 
     // ========================== Focusable =========================
     const mergedFocusable = useFocusable(focusable, mergedMask, focusTriggerAfterClose)
@@ -173,6 +186,7 @@ const Modal = defineComponent<
       zIndex: zIndex.value,
       focusTriggerAfterClose: mergedFocusable.value?.focusTriggerAfterClose,
       focusable: mergedFocusable.value,
+      maskClosable: maskClosable.value,
     }) as ModalProps)
 
     const [mergedClassNames, mergedStyles] = useMergeSemantic<
@@ -354,6 +368,7 @@ const Modal = defineComponent<
               transitionName={getTransitionName(rootPrefixCls.value, 'zoom', props.transitionName)}
               maskTransitionName={getTransitionName(rootPrefixCls.value, 'fade', props.maskTransitionName)}
               mask={mergedMask.value}
+              maskClosable={mergeMaskClosable.value}
               className={mergedClassName}
               style={{ ...contextStyle.value, ...responsiveWidthVars.value, ...attrStyle }}
               classNames={{

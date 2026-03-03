@@ -95,7 +95,13 @@ export interface TabsEmits {
   'tabClick': NonNullable<VcTabsProps['onTabClick']>
   'tabScroll': NonNullable<VcTabsProps['onTabScroll']>
   'update:activeKey': (activeKey: string) => void
-  [key: string]: (...args: any[]) => void
+}
+export interface TabsEmitsProps {
+  onEdit?: TabsEmits['edit']
+  onChange?: TabsEmits['change']
+  onTabClick?: TabsEmits['tabClick']
+  onTabScroll?: TabsEmits['tabScroll']
+  'onUpdate:activeKey'?: TabsEmits['update:activeKey']
 }
 
 export interface TabsProps extends BaseTabsProps, CompatibilityProps, Omit<
@@ -111,7 +117,9 @@ export interface TabsProps extends BaseTabsProps, CompatibilityProps, Omit<
   | 'onTabScroll'
   | 'onTabClick'
   | 'renderTabBar'
-> {
+>,
+  /* @vue-ignore */
+  TabsEmitsProps {
   addIcon?: VueNode
   moreIcon?: VueNode
   more?: MoreProps
@@ -239,7 +247,7 @@ const InternalTabs = defineComponent<
       warning.deprecated(!popupClassName.value, 'popupClassName', 'classNames.popup')
       warning.deprecated(!tabPosition.value, 'tabPosition', 'tabPlacement')
       warning(
-        !((props as any).onPrevClick || (props as any).onNextClick),
+        !((attrs as any).onPrevClick || (attrs as any).onNextClick),
         'breaking',
         '`onPrevClick` and `onNextClick` has been removed. Please use `onTabScroll` instead.',
       )
@@ -365,8 +373,8 @@ const InternalTabs = defineComponent<
       }
       let renderTabBar: any | undefined
       if (slots.renderTabBar || props.renderTabBar) {
-        renderTabBar = (props: any, TabNavListComponent: any) => {
-          return getSlotPropsFnRun(slots, props, 'renderTabBar', true, { props, TabNavListComponent })
+        renderTabBar = (tabBarProps: any, TabNavListComponent: any) => {
+          return getSlotPropsFnRun(slots, props, 'renderTabBar', true, { props: tabBarProps, TabNavListComponent })
         }
       }
       let tabBarExtraContent: any

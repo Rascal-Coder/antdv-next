@@ -134,12 +134,12 @@ const genMessageStyle: GenerateStyle<MessageToken> = (token) => {
     {
       [componentCls]: {
         ...resetComponent(token),
-        'color': colorText,
-        'position': 'fixed',
-        'top': marginXS,
-        'width': '100%',
-        'pointerEvents': 'none',
-        'zIndex': zIndexPopup,
+        color: colorText,
+        position: 'fixed',
+        top: marginXS,
+        width: '100%',
+        pointerEvents: 'none',
+        zIndex: zIndexPopup,
 
         [`${componentCls}-move-up`]: {
           animationFillMode: 'forwards',
@@ -210,9 +210,7 @@ export default genStyleHooks(
   'Message',
   (token) => {
     // Gen-style functions here
-    const combinedToken = mergeToken<MessageToken>(token, {
-      height: 150,
-    })
+    const combinedToken = mergeToken<MessageToken>(token, { height: 150 })
     return genMessageStyle(combinedToken)
   },
   prepareComponentToken,

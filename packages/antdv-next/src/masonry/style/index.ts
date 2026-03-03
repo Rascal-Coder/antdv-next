@@ -8,31 +8,31 @@ export interface ComponentToken {}
 
 export interface MasonryToken extends FullToken<'Masonry'> {}
 
-export const genMasonryStyle: GenerateStyle<MasonryToken> = (token: MasonryToken): CSSObject => {
+export const genMasonryStyle: GenerateStyle<MasonryToken, CSSObject> = (token) => {
   const { componentCls } = token
 
   const itemCls = `${componentCls}-item`
 
   return {
     [componentCls]: {
-      'position': 'relative',
-      'boxSizing': 'border-box',
-      'display': 'flex',
-      'flexDirection': 'column',
-      'flexWrap': 'wrap',
+      position: 'relative',
+      boxSizing: 'border-box',
+      display: 'flex',
+      flexDirection: 'column',
+      flexWrap: 'wrap',
 
       '&-rtl': {
         direction: 'rtl',
       },
 
       [`& > ${itemCls}`]: {
-        'boxSizing': 'border-box',
+        boxSizing: 'border-box',
 
         // Motion
         '&-fade': {
           '&-appear': {
-            'transition': `opacity ${token.motionDurationSlow} ${token.motionEaseOut}`,
-            'opacity': 0,
+            transition: `opacity ${token.motionDurationSlow} ${token.motionEaseOut}`,
+            opacity: 0,
 
             '&-active': {
               opacity: 1,
@@ -40,8 +40,8 @@ export const genMasonryStyle: GenerateStyle<MasonryToken> = (token: MasonryToken
           },
 
           '&-leave': {
-            'transition': `opacity ${token.motionDurationFast} ${token.motionEaseOut}`,
-            'opacity': 1,
+            transition: `opacity ${token.motionDurationFast} ${token.motionEaseOut}`,
+            opacity: 1,
 
             '&-active': {
               opacity: 0,
@@ -59,4 +59,4 @@ export const genMasonryStyle: GenerateStyle<MasonryToken> = (token: MasonryToken
   }
 }
 
-export default genStyleHooks('Masonry', token => [genMasonryStyle(token)])
+export default genStyleHooks('Masonry', genMasonryStyle)

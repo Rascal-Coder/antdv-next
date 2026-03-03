@@ -1,5 +1,6 @@
 import type { CSSObject } from '@antdv-next/cssinjs'
 import type { GenerateStyle } from '../../theme/internal'
+
 import type { ComponentToken, InputToken } from './token'
 import { unit } from '@antdv-next/cssinjs'
 import { clearFix, resetComponent } from '../../style'
@@ -34,18 +35,15 @@ export function genPlaceholderStyle(color: string): CSSObject {
   }
 }
 
-export function genActiveStyle(token: InputToken) {
-  return {
-    borderColor: token.activeBorderColor,
-    boxShadow: token.activeShadow,
-    outline: 0,
-    backgroundColor: token.activeBg,
-  }
-}
+export const genActiveStyle: GenerateStyle<InputToken, CSSObject> = token => ({
+  borderColor: token.activeBorderColor,
+  boxShadow: token.activeShadow,
+  outline: 0,
+  backgroundColor: token.activeBg,
+})
 
-export function genInputLargeStyle(token: InputToken): CSSObject {
+export const genInputLargeStyle: GenerateStyle<InputToken, CSSObject> = (token) => {
   const { paddingBlockLG, lineHeightLG, borderRadiusLG, paddingInlineLG } = token
-
   return {
     padding: `${unit(paddingBlockLG)} ${unit(paddingInlineLG)}`,
     fontSize: token.inputFontSizeLG,
@@ -54,29 +52,27 @@ export function genInputLargeStyle(token: InputToken): CSSObject {
   }
 }
 
-export function genInputSmallStyle(token: InputToken): CSSObject {
-  return {
-    padding: `${unit(token.paddingBlockSM)} ${unit(token.paddingInlineSM)}`,
-    fontSize: token.inputFontSizeSM,
-    borderRadius: token.borderRadiusSM,
-  }
-}
+export const genInputSmallStyle: GenerateStyle<InputToken, CSSObject> = token => ({
+  padding: `${unit(token.paddingBlockSM)} ${unit(token.paddingInlineSM)}`,
+  fontSize: token.inputFontSizeSM,
+  borderRadius: token.borderRadiusSM,
+})
 
 export function genBasicInputStyle(token: InputToken, option: {
   largeStyle?: CSSObject
   smallStyle?: CSSObject
 } = {}): CSSObject {
   return {
-    'position': 'relative',
-    'display': 'inline-block',
-    'width': '100%',
-    'minWidth': 0,
-    'padding': `${unit(token.paddingBlock)} ${unit(token.paddingInline)}`,
-    'color': token.colorText,
-    'fontSize': token.inputFontSize,
-    'lineHeight': token.lineHeight,
-    'borderRadius': token.borderRadius,
-    'transition': `all ${token.motionDurationMid}`,
+    position: 'relative',
+    display: 'inline-block',
+    width: '100%',
+    minWidth: 0,
+    padding: `${unit(token.paddingBlock)} ${unit(token.paddingInline)}`,
+    color: token.colorText,
+    fontSize: token.inputFontSize,
+    lineHeight: token.lineHeight,
+    borderRadius: token.borderRadius,
+    transition: `all ${token.motionDurationMid}`,
     ...genPlaceholderStyle(token.colorTextPlaceholder),
 
     // Size
@@ -96,19 +92,19 @@ export function genBasicInputStyle(token: InputToken, option: {
   }
 }
 
-export function genInputGroupStyle(token: InputToken): CSSObject {
+export const genInputGroupStyle: GenerateStyle<InputToken, CSSObject> = (token) => {
   const { componentCls, antCls } = token
 
   return {
-    'position': 'relative',
-    'display': 'table',
-    'width': '100%',
-    'borderCollapse': 'separate',
-    'borderSpacing': 0,
+    position: 'relative',
+    display: 'table',
+    width: '100%',
+    borderCollapse: 'separate',
+    borderSpacing: 0,
 
     // Undo padding and float of grid classes
     '&[class*=\'col-\']': {
-      'paddingInlineEnd': token.paddingXS,
+      paddingInlineEnd: token.paddingXS,
 
       '&:last-child': {
         paddingInlineEnd: 0,
@@ -134,7 +130,7 @@ export function genInputGroupStyle(token: InputToken): CSSObject {
     },
 
     [`> ${componentCls}`]: {
-      'display': 'table-cell',
+      display: 'table-cell',
 
       '&:not(:first-child):not(:last-child)': {
         borderRadius: 0,
@@ -143,10 +139,10 @@ export function genInputGroupStyle(token: InputToken): CSSObject {
 
     [`${componentCls}-group`]: {
       '&-addon, &-wrap': {
-        'display': 'table-cell',
-        'width': 1,
-        'whiteSpace': 'nowrap',
-        'verticalAlign': 'middle',
+        display: 'table-cell',
+        width: 1,
+        whiteSpace: 'nowrap',
+        verticalAlign: 'middle',
 
         '&:not(:first-child):not(:last-child)': {
           borderRadius: 0,
@@ -196,9 +192,9 @@ export function genInputGroupStyle(token: InputToken): CSSObject {
     },
 
     [componentCls]: {
-      'width': '100%',
-      'marginBottom': 0,
-      'textAlign': 'inherit',
+      width: '100%',
+      marginBottom: 0,
+      textAlign: 'inherit',
 
       '&:focus': {
         zIndex: 1, // Fix https://gw.alipayobjects.com/zos/rmsportal/DHNpoqfMXSfrSnlZvhsJ.png
@@ -259,12 +255,12 @@ export function genInputGroupStyle(token: InputToken): CSSObject {
     },
 
     [`&${componentCls}-group-compact`]: {
-      'display': 'block',
+      display: 'block',
       ...clearFix(),
 
       [`${componentCls}-group-addon, ${componentCls}-group-wrap, > ${componentCls}`]: {
         '&:not(:first-child):not(:last-child)': {
-          'borderInlineEndWidth': token.lineWidth,
+          borderInlineEndWidth: token.lineWidth,
 
           '&:hover, &:focus': {
             zIndex: 1,
@@ -302,8 +298,8 @@ export function genInputGroupStyle(token: InputToken): CSSObject {
       & > ${antCls}-select-auto-complete ${componentCls},
       & > ${antCls}-cascader-picker ${componentCls},
       & > ${componentCls}-group-wrapper ${componentCls}`]: {
-        'borderInlineEndWidth': token.lineWidth,
-        'borderRadius': 0,
+        borderInlineEndWidth: token.lineWidth,
+        borderRadius: 0,
 
         '&:hover, &:focus': {
           zIndex: 1,
@@ -351,7 +347,7 @@ export function genInputGroupStyle(token: InputToken): CSSObject {
   }
 }
 
-export const genInputStyle: GenerateStyle<InputToken> = (token: InputToken) => {
+export const genInputStyle: GenerateStyle<InputToken, CSSObject> = (token) => {
   const { componentCls, controlHeightSM, lineWidth, calc } = token
 
   const FIXED_CHROME_COLOR_HEIGHT = 16
@@ -393,24 +389,24 @@ export const genInputStyle: GenerateStyle<InputToken> = (token: InputToken) => {
   }
 }
 
-function genAllowClearStyle(token: InputToken): CSSObject {
+const genAllowClearStyle: GenerateStyle<InputToken, CSSObject> = (token) => {
   const { componentCls } = token
   return {
     // ========================= Input =========================
     [`${componentCls}-clear-icon`]: {
-      'margin': 0,
-      'padding': 0,
-      'lineHeight': 0,
-      'color': token.colorTextQuaternary,
-      'fontSize': token.fontSizeIcon,
-      'verticalAlign': -1,
+      margin: 0,
+      padding: 0,
+      lineHeight: 0,
+      color: token.colorTextQuaternary,
+      fontSize: token.fontSizeIcon,
+      verticalAlign: -1,
       // https://github.com/ant-design/ant-design/pull/18151
       // https://codesandbox.io/s/wizardly-sun-u10br
-      'cursor': 'pointer',
-      'transition': `color ${token.motionDurationSlow}`,
-      'border': 'none',
-      'outline': 'none',
-      'backgroundColor': 'transparent',
+      cursor: 'pointer',
+      transition: `color ${token.motionDurationSlow}`,
+      border: 'none',
+      outline: 'none',
+      backgroundColor: 'transparent',
       '&:hover': {
         color: token.colorIcon,
       },
@@ -430,7 +426,7 @@ function genAllowClearStyle(token: InputToken): CSSObject {
   }
 }
 
-export const genAffixStyle: GenerateStyle<InputToken> = (token: InputToken) => {
+export const genAffixStyle: GenerateStyle<InputToken, CSSObject> = (token) => {
   const {
     componentCls,
     inputAffixPadding,
@@ -447,7 +443,7 @@ export const genAffixStyle: GenerateStyle<InputToken> = (token: InputToken) => {
   return {
     [affixCls]: {
       ...genBasicInputStyle(token),
-      'display': 'inline-flex',
+      display: 'inline-flex',
 
       '&-focused, &:focus': {
         zIndex: 1,
@@ -458,12 +454,12 @@ export const genAffixStyle: GenerateStyle<InputToken> = (token: InputToken) => {
       },
 
       [`> input${componentCls}, > textarea${componentCls}`]: {
-        'fontSize': 'inherit',
-        'border': 'none',
-        'borderRadius': 0,
-        'outline': 'none',
-        'background': 'transparent',
-        'color': 'inherit',
+        fontSize: 'inherit',
+        border: 'none',
+        borderRadius: 0,
+        outline: 'none',
+        background: 'transparent',
+        color: 'inherit',
 
         '&::-ms-reveal': {
           display: 'none',
@@ -483,9 +479,9 @@ export const genAffixStyle: GenerateStyle<InputToken> = (token: InputToken) => {
 
       [componentCls]: {
         '&-prefix, &-suffix': {
-          'display': 'flex',
-          'flex': 'none',
-          'alignItems': 'center',
+          display: 'flex',
+          flex: 'none',
+          alignItems: 'center',
 
           '> *:not(:last-child)': {
             marginInlineEnd: token.paddingXS,
@@ -514,9 +510,9 @@ export const genAffixStyle: GenerateStyle<InputToken> = (token: InputToken) => {
 
       // password
       [`${iconCls}${componentCls}-password-icon`]: {
-        'color': colorIcon,
-        'cursor': 'pointer',
-        'transition': `all ${motionDurationSlow}`,
+        color: colorIcon,
+        cursor: 'pointer',
+        transition: `all ${motionDurationSlow}`,
 
         '&:hover': {
           color: colorIconHover,
@@ -532,8 +528,8 @@ export const genAffixStyle: GenerateStyle<InputToken> = (token: InputToken) => {
     [affixClsDisabled]: {
       // password disabled
       [`${iconCls}${componentCls}-password-icon`]: {
-        'color': colorIcon,
-        'cursor': 'not-allowed',
+        color: colorIcon,
+        cursor: 'not-allowed',
 
         '&:hover': {
           color: colorIcon,
@@ -543,7 +539,7 @@ export const genAffixStyle: GenerateStyle<InputToken> = (token: InputToken) => {
   }
 }
 
-const genGroupStyle: GenerateStyle<InputToken> = (token: InputToken) => {
+const genGroupStyle: GenerateStyle<InputToken, CSSObject> = (token) => {
   const { componentCls, borderRadiusLG, borderRadiusSM } = token
 
   return {
@@ -557,10 +553,10 @@ const genGroupStyle: GenerateStyle<InputToken> = (token: InputToken) => {
       },
 
       '&-wrapper': {
-        'display': 'inline-block',
-        'width': '100%',
-        'textAlign': 'start',
-        'verticalAlign': 'top', // https://github.com/ant-design/ant-design/issues/6403
+        display: 'inline-block',
+        width: '100%',
+        textAlign: 'start',
+        verticalAlign: 'top', // https://github.com/ant-design/ant-design/issues/6403
 
         '&-rtl': {
           direction: 'rtl',
@@ -634,7 +630,7 @@ const genGroupStyle: GenerateStyle<InputToken> = (token: InputToken) => {
 }
 
 // ============================== Range ===============================
-const genRangeStyle: GenerateStyle<InputToken> = (token) => {
+const genRangeStyle: GenerateStyle<InputToken, CSSObject> = (token) => {
   const { componentCls } = token
 
   return {

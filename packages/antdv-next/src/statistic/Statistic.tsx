@@ -63,7 +63,6 @@ export type StatisticProps = StatisticRectProps
 export interface StatisticEmits {
   mouseenter: (e: MouseEvent) => void
   mouseleave: (e: MouseEvent) => void
-  [key: string]: (...args: any[]) => void
 }
 
 export interface StatisticSlots {
@@ -83,8 +82,17 @@ const defaults = {
   prefix: undefined,
 } as any
 
+export interface InternalStatisticProps extends StatisticProps,
+  /* @vue-ignore */
+  StatisticEmitsProps {}
+
+export interface StatisticEmitsProps {
+  onMouseenter?: StatisticEmits['mouseenter']
+  onMouseleave?: StatisticEmits['mouseleave']
+}
+
 const Statistic = defineComponent<
-  StatisticProps,
+  InternalStatisticProps,
   StatisticEmits,
   string,
   SlotsType<StatisticSlots>

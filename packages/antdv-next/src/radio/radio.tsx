@@ -25,10 +25,28 @@ import { useDisabledContext } from '../config-provider/DisabledContext.tsx'
 import useCSSVarCls from '../config-provider/hooks/useCSSVarCls'
 import { useFormItemInputContext } from '../form/context.tsx'
 import { useRadioGroupContext, useRadioOptionTypeContext } from './context'
+
 import useStyle from './style'
 
+export interface InternalRadioProps extends RadioProps,
+  /* @vue-ignore */
+  RadioEmitsProps {}
+
+export interface RadioEmitsProps {
+  onChange?: RadioEmits['change']
+  'onUpdate:checked'?: RadioEmits['update:checked']
+  'onUpdate:value'?: RadioEmits['update:value']
+  onMouseenter?: RadioEmits['mouseenter']
+  onMouseleave?: RadioEmits['mouseleave']
+  onKeypress?: RadioEmits['keypress']
+  onKeydown?: RadioEmits['keydown']
+  onFocus?: RadioEmits['focus']
+  onBlur?: RadioEmits['blur']
+  onClick?: RadioEmits['click']
+}
+
 const InternalRadio = defineComponent<
-  RadioProps,
+  InternalRadioProps,
   RadioEmits,
   string,
   SlotsType<RadioSlots>
@@ -53,7 +71,7 @@ const InternalRadio = defineComponent<
     }
 
     const onChange = (e: RadioChangeEvent) => {
-      emit('change', e)
+      emit('change', e as any)
       groupContext?.value?.onChange?.(e)
     }
 
@@ -77,17 +95,25 @@ const InternalRadio = defineComponent<
       if (groupContext?.value) {
         _radioProps.name = groupContext.value.name
         _radioProps.checked = props.value === groupContext.value.value
-        _radioProps.disabled = _radioProps.disabled ?? _radioProps.disabled
+        _radioProps.disabled = _radioProps.disabled ?? groupContext.value.disabled
       }
       _radioProps.disabled = _radioProps.disabled ?? disabled.value
 
       return _radioProps
+    })
+
+    const mergedChecked = computed(() => {
+      if (groupContext?.value) {
+        return props.value === groupContext.value?.value
+      }
+      return radioProps.value.checked
     })
     // =========== Merged Props for Semantic ===========
     const mergedProps = computed(() => {
       return {
         ...props,
         ...radioProps.value,
+        disabled: mergedChecked.value,
       }
     })
 
@@ -99,7 +125,7 @@ const InternalRadio = defineComponent<
 
     // ============================ Event Lock ============================
     const [onLabelClick, onInputClick] = useBubbleLock((e) => {
-      emit('click', e)
+      emit('click', e as MouseEvent)
     })
     expose({
       blur: () => innerRef.value?.blur?.(),
@@ -112,7 +138,7 @@ const InternalRadio = defineComponent<
       const wrapperClassString = clsx(
         `${prefixCls.value}-wrapper`,
         {
-          [`${prefixCls.value}-wrapper-checked`]: radioProps.value.checked,
+          [`${prefixCls.value}-wrapper-checked`]: mergedChecked.value,
           [`${prefixCls.value}-wrapper-disabled`]: radioProps.value.disabled,
           [`${prefixCls.value}-wrapper-rtl`]: direction.value === 'rtl',
           [`${prefixCls.value}-wrapper-in-form-item`]: formItemInputContext?.value?.isFormItemInput,
@@ -148,6 +174,7 @@ const InternalRadio = defineComponent<
               class={clsx(mergedClassNames.value.icon, {
                 [TARGET_CLS]: !isButtonType.value,
               })}
+              checked={mergedChecked.value}
               style={mergedStyles.value.icon}
               type="radio"
               prefixCls={prefixCls.value}

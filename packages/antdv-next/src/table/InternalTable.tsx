@@ -166,7 +166,9 @@ export interface TableProps<RecordType = AnyObject>
   virtual?: boolean
 }
 
-export interface InternalTableProps<RecordType = AnyObject> extends TableProps<RecordType> {
+export interface InternalTableProps<RecordType = AnyObject> extends TableProps<RecordType>,
+  /* @vue-ignore */
+  TableEmitsProps {
   _renderTimes: number
 }
 
@@ -179,7 +181,11 @@ export interface TableEmits<RecordType = AnyObject> {
   ) => void
   'update:expandedRowKeys': (keys: readonly Key[]) => void
   'scroll': NonNullable<VcTableProps['onScroll']>
-  [key: string]: (...args: any[]) => void
+}
+export interface TableEmitsProps<RecordType = AnyObject> {
+  onChange?: TableEmits<RecordType>['change']
+  'onUpdate:expandedRowKeys'?: TableEmits<RecordType>['update:expandedRowKeys']
+  onScroll?: TableEmits<RecordType>['scroll']
 }
 
 export interface TableSlots<RecordType = AnyObject> {
@@ -231,7 +237,8 @@ const InternalTable = defineComponent<
       bodyCell: contextBodyCell,
       headerCell: contextHeaderCell,
       rowKey: contextRowKey,
-    } = useComponentBaseConfig('table', props, ['bodyCell', 'headerCell', 'rowKey'])
+      scroll: contextScroll,
+    } = useComponentBaseConfig('table', props, ['bodyCell', 'headerCell', 'rowKey', 'scroll'])
 
     const configCtx = useConfig()
 
@@ -314,14 +321,6 @@ const InternalTable = defineComponent<
         '_renderTimes',
       ]),
     )
-
-    const mergedScroll = computed(() => {
-      if (!props.scroll) {
-        return undefined
-      }
-      const { scrollToFirstRowOnChange, ...rest } = props.scroll
-      return rest
-    })
 
     const mergedExpandable = computed(() => {
       const { expandable, ...legacyExpandableProps } = props
@@ -786,8 +785,11 @@ const InternalTable = defineComponent<
       const TableComp = TableComponent.value as any
       const virtualProps = mergedVirtual.value ? { listItemHeight: listItemHeight.value } : {}
 
+      // ============================ Scroll ============================
+      const mergedScroll = props.scroll ?? contextScroll.value
+
       return (
-        <div ref={rootRef} class={wrapperCls} style={mergedStyle}>
+        <div ref={rootRef} class={wrapperCls} style={mergedStyle} data-allow-mismatch>
           <Spin spinning={false} {...(spinProps.value || {})}>
             {paginationNodes.top}
             <TableComp
@@ -805,14 +807,14 @@ const InternalTable = defineComponent<
               expandable={mergedExpandableConfig}
               prefixCls={prefixCls.value}
               direction={props.direction ?? direction.value}
-              headerCell={slots.headerCell || props.headerCell ? renderHeaderCell : undefined}
-              bodyCell={slots.bodyCell || props.bodyCell ? renderBodyCell : undefined}
+              headerCell={slots.headerCell || contextHeaderCell.value || props.headerCell ? renderHeaderCell : undefined}
+              bodyCell={slots.bodyCell || props.bodyCell || contextBodyCell.value || configCtx.value?.transformCellText ? renderBodyCell : undefined}
               className={tableClassName}
               internalHooks={INTERNAL_HOOKS}
               internalRefs={internalRefs}
               transformColumns={transformColumns as any}
               getContainerWidth={getContainerWidth}
-              scroll={mergedScroll.value as any}
+              scroll={mergedScroll}
               measureRowRender={(measureRow: any) => (
                 <TableMeasureRowContextProvider value={true}>
                   <ConfigProvider getPopupContainer={node => node as HTMLElement}>

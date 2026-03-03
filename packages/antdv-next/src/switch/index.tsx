@@ -24,11 +24,13 @@ export type SwitchSemanticName = keyof SwitchSemanticClassNames & keyof SwitchSe
 export interface SwitchSemanticClassNames {
   root?: string
   content?: string
+  indicator?: string
 }
 
 export interface SwitchSemanticStyles {
   root?: CSSProperties
   content?: CSSProperties
+  indicator?: CSSProperties
 }
 
 export type SwitchClassNamesType = SemanticClassNamesType<SwitchProps, SwitchSemanticClassNames>
@@ -37,7 +39,9 @@ export type SwitchStylesType = SemanticStylesType<SwitchProps, SwitchSemanticSty
 
 export type CheckedValueType = string | number | boolean | object
 
-export interface SwitchProps extends ComponentBaseProps {
+export interface SwitchProps extends ComponentBaseProps,
+  /* @vue-ignore */
+  SwitchEmitsProps {
   size?: SwitchSize
   checked?: CheckedValueType
   defaultChecked?: CheckedValueType
@@ -77,7 +81,12 @@ export interface SwitchEmits {
   'click': SwitchClickEventHandler
   'update:checked': (checked: CheckedValueType) => void
   'update:value': (checked: CheckedValueType) => void
-  [key: string]: (...args: any[]) => any
+}
+export interface SwitchEmitsProps {
+  onChange?: SwitchEmits['change']
+  onClick?: SwitchEmits['click']
+  'onUpdate:checked'?: SwitchEmits['update:checked']
+  'onUpdate:value'?: SwitchEmits['update:value']
 }
 
 export interface SwitchSlots {
@@ -127,6 +136,9 @@ const Switch = defineComponent<
         }
         else if (newValue !== undefined) {
           currentValue.value = newValue
+        }
+        else {
+          currentValue.value = mergedUnCheckedValue.value
         }
       },
     )
@@ -186,7 +198,10 @@ const Switch = defineComponent<
       const unCheckedChildren = getSlotPropsFnRun(slots, props, 'unCheckedChildren')
       const { className, style, restAttrs } = getAttrStyleAndClass(attrs)
       const loadingIcon = (
-        <div class={`${prefixCls.value}-handle`}>
+        <div
+          class={clsx(`${prefixCls.value}-handle`, mergedClassNames.value.indicator)}
+          style={mergedStyles.value.indicator}
+        >
           {loading && <LoadingOutlined class={`${prefixCls.value}-loading-icon`} />}
         </div>
       )

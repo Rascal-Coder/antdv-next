@@ -1,3 +1,5 @@
+import type { CSSObject } from '@antdv-next/cssinjs'
+
 import type { FullToken, GenerateStyle, GetDefaultToken } from '../../theme/internal'
 import { genStyleHooks } from '../../theme/internal'
 
@@ -16,7 +18,7 @@ export interface ComponentToken {
 export interface PopconfirmToken extends FullToken<'Popconfirm'> {}
 
 // =============================== Base ===============================
-const genBaseStyle: GenerateStyle<PopconfirmToken> = (token) => {
+const genBaseStyle: GenerateStyle<PopconfirmToken, CSSObject> = (token) => {
   const {
     componentCls,
     iconCls,
@@ -53,8 +55,8 @@ const genBaseStyle: GenerateStyle<PopconfirmToken> = (token) => {
         },
 
         [`${componentCls}-title`]: {
-          'fontWeight': fontWeightStrong,
-          'color': colorTextHeading,
+          fontWeight: fontWeightStrong,
+          color: colorTextHeading,
 
           '&:only-child': {
             fontWeight: 'normal',
@@ -88,6 +90,6 @@ export const prepareComponentToken: GetDefaultToken<'Popconfirm'> = (token) => {
   }
 }
 
-export default genStyleHooks('Popconfirm', token => genBaseStyle(token), prepareComponentToken, {
+export default genStyleHooks('Popconfirm', genBaseStyle, prepareComponentToken, {
   resetStyle: false,
 })

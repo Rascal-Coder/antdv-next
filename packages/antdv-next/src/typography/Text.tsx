@@ -1,10 +1,18 @@
 import type { SlotsType } from 'vue'
 import type { BlockProps, EllipsisConfig, TypographyBaseEmits, TypographySlots } from './interface'
 import { omit } from 'es-toolkit'
-import { computed, defineComponent } from 'vue'
+import { computed, defineComponent, watchEffect } from 'vue'
+import { devUseWarning, isDev } from '../_util/warning'
+
 import Base from './Base'
 
-export interface TextProps extends BlockProps {
+export type TypographyBaseEmitsProps = {
+  [K in keyof TypographyBaseEmits as `on${Capitalize<string & K>}`]?: TypographyBaseEmits[K]
+}
+
+export interface TextProps extends BlockProps,
+  /* @vue-ignore */
+  TypographyBaseEmitsProps {
   ellipsis?: boolean | Omit<EllipsisConfig, 'expandable' | 'rows' | 'onExpand'>
 }
 
@@ -22,6 +30,20 @@ const Text = defineComponent<
       }
       return ellipsis
     })
+
+    if (isDev) {
+      const warning = devUseWarning('Typography.Text')
+      watchEffect(() => {
+        const ellipsis = props.ellipsis as any
+        warning(
+          typeof ellipsis !== 'object'
+          || !ellipsis
+          || (!('expandable' in ellipsis) && !('rows' in ellipsis)),
+          'usage',
+          '`ellipsis` do not support `expandable` or `rows` props.',
+        )
+      })
+    }
 
     const listeners = {
       'onClick': (e: MouseEvent) => emit('click', e),

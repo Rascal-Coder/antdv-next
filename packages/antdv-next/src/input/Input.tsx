@@ -75,7 +75,9 @@ interface BaseVcInputProps {
   inputMode?: string
 }
 
-export interface InputProps extends ComponentBaseProps, BaseVcInputProps {
+export interface InputProps extends ComponentBaseProps, BaseVcInputProps,
+  /* @vue-ignore */
+  InputEmitsProps {
   size?: SizeType
   disabled?: boolean
   status?: InputStatus
@@ -102,7 +104,18 @@ export interface InputEmits {
   'compositionstart': NonNullable<VcInputProps['onCompositionStart']>
   'compositionend': NonNullable<VcInputProps['onCompositionEnd']>
   'update:value': (value: VcInputProps['value']) => void
-  [key: string]: (...args: any[]) => any
+}
+export interface InputEmitsProps {
+  onPressEnter?: InputEmits['pressEnter']
+  onClear?: InputEmits['clear']
+  onChange?: InputEmits['change']
+  onBlur?: InputEmits['blur']
+  onFocus?: InputEmits['focus']
+  onKeydown?: InputEmits['keydown']
+  onKeyup?: InputEmits['keyup']
+  onCompositionstart?: InputEmits['compositionstart']
+  onCompositionend?: InputEmits['compositionend']
+  'onUpdate:value'?: InputEmits['update:value']
 }
 
 export interface InputSlots {
@@ -274,11 +287,11 @@ const InternalInput = defineComponent<
       emit('keyup', e)
     }
 
-    const handleCompositionStart: InputEmits['compositionStart'] = (e) => {
+    const handleCompositionStart: InputEmits['compositionstart'] = (e) => {
       emit('compositionstart', e)
     }
 
-    const handleCompositionEnd: InputEmits['compositionEnd'] = (e) => {
+    const handleCompositionEnd: InputEmits['compositionend'] = (e) => {
       emit('compositionend', e)
     }
 

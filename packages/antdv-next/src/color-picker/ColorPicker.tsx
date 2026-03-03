@@ -23,16 +23,17 @@ import { useSize } from '../config-provider/hooks/useSize'
 import { useFormItemInputContext } from '../form/context'
 import Popover from '../popover'
 import { useCompactItemContext } from '../space/Compact'
+import useMergedArrow from '../tooltip/hooks/useMergedArrow'
 import { AggregationColor } from './color'
 import ColorPickerPanel from './ColorPickerPanel'
 import ColorTrigger from './components/ColorTrigger'
 import useModeColor from './hooks/useModeColor'
 import useStyle from './style'
-import { genAlphaColor, generateColor, getColorAlpha } from './util'
+
+import { formatColorValue, genAlphaColor, generateColor, getColorAlpha } from './util'
 
 const defaults = {
   trigger: 'click',
-  arrow: true,
   placement: 'bottomLeft',
   autoAdjustOverflow: true,
   disabledAlpha: false,
@@ -40,8 +41,23 @@ const defaults = {
   destroyOnHidden: false,
 } as any
 
+export interface InternalColorPickerProps extends ColorPickerProps,
+  /* @vue-ignore */
+  ColorPickerEmitsProps {}
+
+export interface ColorPickerEmitsProps {
+  onChange?: ColorPickerEmits['change']
+  onClear?: ColorPickerEmits['clear']
+  onChangeComplete?: ColorPickerEmits['changeComplete']
+  onOpenChange?: ColorPickerEmits['openChange']
+  'onUpdate:open'?: ColorPickerEmits['update:open']
+  onFormatChange?: ColorPickerEmits['formatChange']
+  'onUpdate:value'?: ColorPickerEmits['update:value']
+  'onUpdate:format'?: ColorPickerEmits['update:format']
+}
+
 const ColorPicker = defineComponent<
-  ColorPickerProps,
+  InternalColorPickerProps,
   ColorPickerEmits,
   string,
   SlotsType<ColorPickerSlots>
@@ -54,7 +70,9 @@ const ColorPicker = defineComponent<
       style: contextStyle,
       classes: contextClassNames,
       styles: contextStyles,
-    } = useComponentBaseConfig('colorPicker', props, [], 'color-picker')
+      arrow: contextArrow,
+    } = useComponentBaseConfig('colorPicker', props, ['arrow'], 'color-picker')
+
     const {
       size: customizeSize,
       classes,
@@ -62,10 +80,12 @@ const ColorPicker = defineComponent<
       value,
       mode,
       format,
+      valueFormat,
       open,
       presets,
       disabledAlpha,
       disabledFormat,
+      arrow,
     } = toPropsRefs(
       props,
       'size',
@@ -74,10 +94,12 @@ const ColorPicker = defineComponent<
       'value',
       'mode',
       'format',
+      'valueFormat',
       'open',
       'presets',
       'disabledAlpha',
       'disabledFormat',
+      'arrow',
     )
     const contextDisabled = useDisabledContext()
     const mergedDisabled = computed(() => props.disabled ?? contextDisabled.value)
@@ -85,6 +107,7 @@ const ColorPicker = defineComponent<
     // ================== Size ==================
     const { compactSize, compactItemClassnames } = useCompactItemContext(prefixCls, direction)
     const mergedSize = useSize(ctx => customizeSize.value ?? compactSize.value ?? ctx)
+    const mergedArrow = useMergedArrow(arrow, contextArrow)
 
     // =========== Merged Props for Semantic ===========
     const mergedProps = computed(() => {
@@ -94,7 +117,7 @@ const ColorPicker = defineComponent<
         allowClear: props.allowClear ?? false,
         autoAdjustOverflow: props.autoAdjustOverflow ?? true,
         disabledAlpha: props.disabledAlpha ?? false,
-        arrow: props.arrow ?? true,
+        arrow: mergedArrow.value,
         placement: props.placement ?? 'bottomLeft',
         disabled: mergedDisabled.value,
         size: mergedSize.value,
@@ -120,8 +143,7 @@ const ColorPicker = defineComponent<
     watch(
       open,
       (val) => {
-        if (val !== undefined)
-          internalPopupOpen.value = val
+        internalPopupOpen.value = val ?? false
       },
     )
 
@@ -137,7 +159,7 @@ const ColorPicker = defineComponent<
       formatValue.value = newFormat
       if (prev !== newFormat) {
         emit('formatChange', newFormat)
-        emit('update:format', newFormat)
+        emit('update:format', newFormat!)
       }
     }
 
@@ -184,7 +206,7 @@ const ColorPicker = defineComponent<
       cachedGradientColor.value = undefined
 
       emit('change', color, color.toCssString())
-      emit('update:value', color)
+      emit('update:value', formatColorValue(color, valueFormat.value))
 
       if (!changeFromPickerDrag) {
         onInternalChangeComplete(color)
@@ -228,7 +250,12 @@ const ColorPicker = defineComponent<
       setColor(cleared)
       emit('clear')
       emit('change', cleared, cleared.toCssString())
-      emit('update:value', cleared.toCssString())
+      emit(
+        'update:value',
+        valueFormat.value
+          ? formatColorValue(cleared, valueFormat.value)
+          : cleared.toCssString(),
+      )
     }
 
     expose({
@@ -245,7 +272,6 @@ const ColorPicker = defineComponent<
         rootClass,
         trigger,
         placement,
-        arrow,
         getPopupContainer,
         autoAdjustOverflow,
         destroyOnHidden,
@@ -257,7 +283,7 @@ const ColorPicker = defineComponent<
       const rtlCls = {
         [`${prefixCls.value}-rtl`]: direction.value === 'rtl',
       }
-      const mergedRootCls = clsx(mergedClassNames.value.root, rootClass, cssVarCls.value, rootCls.value, rtlCls)
+      const mergedRootCls = clsx(rootClass, cssVarCls.value, rootCls.value, rtlCls)
 
       const mergedCls = clsx(
         getStatusClassNames(prefixCls.value, contextStatus.value),
@@ -276,14 +302,13 @@ const ColorPicker = defineComponent<
         open: popupOpen.value,
         trigger,
         placement,
-        arrow,
+        arrow: mergedArrow.value,
         rootClass,
         getPopupContainer,
         autoAdjustOverflow,
         destroyOnHidden,
       }
       const mergedStyle = {
-        ...mergedStyles.value.root,
         ...contextStyle.value,
         ...style,
       }
@@ -335,6 +360,8 @@ const ColorPicker = defineComponent<
               showText={mergedShowText as any}
               format={formatValue.value}
               color={mergedColor.value as any}
+              classes={mergedClassNames.value}
+              styles={mergedStyles.value}
             />
           )
       return (

@@ -1,5 +1,5 @@
 import type { AriaAttributes, CSSProperties, SlotsType } from 'vue'
-import type { SemanticClassNamesType, SemanticStylesType } from '../_util/hooks'
+import type { SemanticType } from '../_util/hooks'
 import type { ClosableType } from '../_util/hooks/useClosable'
 import type { SlotsDefineType, VueNode } from '../_util/type.ts'
 import type { ComponentBaseProps } from '../config-provider/context'
@@ -12,31 +12,32 @@ import { getSlotPropFn, getSlotPropsFnRun, toPropsRefs } from '../_util/tools'
 import { useComponentBaseConfig } from '../config-provider/context'
 import useStyle from './style'
 
-export interface AlertSemanticClassNames {
-  root?: string
-  icon?: string
-  section?: string
-  title?: string
-  description?: string
-  actions?: string
-  close?: string
+export interface AlertSemanticType {
+  classes: {
+    root?: string
+    icon?: string
+    section?: string
+    title?: string
+    description?: string
+    actions?: string
+    close?: string
+  }
+  styles: {
+    root?: CSSProperties
+    icon?: CSSProperties
+    section?: CSSProperties
+    title?: CSSProperties
+    description?: CSSProperties
+    actions?: CSSProperties
+    close?: CSSProperties
+  }
 }
+export type AlertClassNamesType = SemanticType<AlertProps, AlertSemanticType['classes']>
+export type AlertStylesType = SemanticType<AlertProps, AlertSemanticType['styles']>
 
-export interface AlertSemanticStyles {
-  root?: CSSProperties
-  icon?: CSSProperties
-  section?: CSSProperties
-  title?: CSSProperties
-  description?: CSSProperties
-  actions?: CSSProperties
-  close?: CSSProperties
-}
-
-export type AlertClassNamesType = SemanticClassNamesType<AlertProps, AlertSemanticClassNames>
-
-export type AlertStylesType = SemanticStylesType<AlertProps, AlertSemanticStyles>
-
-export interface AlertProps extends ComponentBaseProps {
+export interface AlertProps extends ComponentBaseProps,
+  /* @vue-ignore */
+  AlertEmitsProps {
   /** Type of Alert styles, options:`success`, `info`, `warning`, `error` */
   type?: 'success' | 'info' | 'warning' | 'error'
   /** Whether Alert can be closed */
@@ -80,8 +81,14 @@ export interface AlertEmits {
   mouseenter: (e: any) => any
   mouseleave: (e: any) => any
   click: (e: any) => any
-  [key: string]: (e: any) => any
 }
+export interface AlertEmitsProps {
+  onClose?: AlertEmits['close']
+  onMouseenter?: AlertEmits['mouseenter']
+  onMouseleave?: AlertEmits['mouseleave']
+  onClick?: AlertEmits['click']
+}
+
 interface IconNodeProps {
   type: AlertProps['type']
   icon?: AlertProps['icon']

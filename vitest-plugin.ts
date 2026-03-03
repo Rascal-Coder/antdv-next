@@ -10,7 +10,7 @@ const baseUrl = fileURLToPath(new URL('.', import.meta.url))
 export default defineConfig({
   plugins: [
     tsxResolveTypes({
-      defaultPropsToUndefined: true,
+      defaultPropsToUndefined: ['Boolean'],
     }),
     vue(),
     vueJsx({
@@ -43,7 +43,7 @@ export default defineConfig({
       },
       {
         find: '@',
-        replacement: path.resolve(baseUrl, './playground/src'),
+        replacement: path.resolve(baseUrl, './docs/src'),
       },
     ],
   },

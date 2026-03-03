@@ -35,15 +35,15 @@ interface EmptyToken extends FullToken<'Empty'> {
 }
 
 // ============================== Shared ==============================
-const genSharedEmptyStyle: GenerateStyle<EmptyToken> = (token): CSSObject => {
+const genSharedEmptyStyle: GenerateStyle<EmptyToken, CSSObject> = (token) => {
   const { componentCls, margin, marginXS, marginXL, fontSize, lineHeight } = token
 
   return {
     [componentCls]: {
-      'marginInline': marginXS,
+      marginInline: marginXS,
       fontSize,
       lineHeight,
-      'textAlign': 'center',
+      textAlign: 'center',
 
       // 原来 &-image 没有父子结构，现在为了外层承担我们的 hashId，改成父子结构
       [`${componentCls}-image`]: {

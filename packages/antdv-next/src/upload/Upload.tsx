@@ -25,6 +25,7 @@ import useCSSVarCls from '../config-provider/hooks/useCSSVarCls'
 import useLocale from '../locale/useLocale'
 import useStyle from './style'
 import UploadList from './UploadList'
+
 import { file2Obj, getFileItem, removeFileItem, updateFileList } from './utils'
 
 export const LIST_IGNORE = `__LIST_IGNORE_${Date.now()}__`
@@ -54,8 +55,18 @@ const defaults = {
   supportServerRender: true,
 } as any
 
+export interface InternalUploadProps extends UploadProps,
+  /* @vue-ignore */
+  UploadEmitsProps {}
+
+export interface UploadEmitsProps {
+  onChange?: UploadEmits['change']
+  onDrop?: UploadEmits['drop']
+  'onUpdate:fileList'?: UploadEmits['update:fileList']
+}
+
 const InternalUpload = defineComponent<
-  UploadProps,
+  InternalUploadProps,
   UploadEmits,
   string,
   SlotsType<UploadSlots>
@@ -87,9 +98,7 @@ const InternalUpload = defineComponent<
     watch(
       () => props.fileList,
       () => {
-        if (props.fileList !== undefined) {
-          internalFileList.value = props?.fileList ?? []
-        }
+        internalFileList.value = props?.fileList ?? []
       },
     )
     const mergedFileList = computed(() => props?.fileList ?? internalFileList.value ?? [])
@@ -527,18 +536,24 @@ const InternalUpload = defineComponent<
       const mergedRootStyle = { ...mergedStyles.value.root }
 
       if (type === 'drag') {
-        const dragCls = clsx(hashId.value, prefixCls.value, `${prefixCls.value}-drag`, {
-          [`${prefixCls.value}-drag-uploading`]: mergedFileList.value.some(file => file.status === 'uploading'),
-          [`${prefixCls.value}-drag-hover`]: dragState.value === 'dragover',
-          [`${prefixCls.value}-disabled`]: mergedDisabled.value,
-          [`${prefixCls.value}-rtl`]: direction.value === 'rtl',
-        })
+        const dragCls = clsx(
+          hashId.value,
+          prefixCls.value,
+          `${prefixCls.value}-drag`,
+          {
+            [`${prefixCls.value}-drag-uploading`]: mergedFileList.value.some(file => file.status === 'uploading'),
+            [`${prefixCls.value}-drag-hover`]: dragState.value === 'dragover',
+            [`${prefixCls.value}-disabled`]: mergedDisabled.value,
+            [`${prefixCls.value}-rtl`]: direction.value === 'rtl',
+          },
+          mergedClassNames.value.trigger,
+        )
 
         return (
           <span {...restAttrs} class={mergedRootCls} ref={wrapRef} style={mergedRootStyle}>
             <div
               class={dragCls}
-              style={mergedStyle}
+              style={[mergedStyle, mergedStyles.value.trigger]}
               onDrop={onFileDrop}
               onDragover={onFileDrop}
               onDragleave={onFileDrop}
@@ -552,13 +567,18 @@ const InternalUpload = defineComponent<
         )
       }
 
-      const uploadBtnCls = clsx(prefixCls.value, `${prefixCls.value}-select`, {
-        [`${prefixCls.value}-disabled`]: mergedDisabled.value,
-        [`${prefixCls.value}-hidden`]: !hasChildren,
-      })
+      const uploadBtnCls = clsx(
+        prefixCls.value,
+        `${prefixCls.value}-select`,
+        {
+          [`${prefixCls.value}-disabled`]: mergedDisabled.value,
+          [`${prefixCls.value}-hidden`]: !hasChildren,
+        },
+        mergedClassNames.value.trigger,
+      )
 
       const uploadButton = (
-        <div class={uploadBtnCls} style={mergedStyle}>
+        <div class={uploadBtnCls} style={[mergedStyle, mergedStyles.value.trigger]}>
           <VcUpload {...rcUploadProps} ref={upload}>
             {children}
           </VcUpload>

@@ -34,6 +34,7 @@ export interface InputNumberSemanticClassNames {
   suffix?: string
   input?: string
   actions?: string
+  action?: string
 }
 
 export interface InputNumberSemanticStyles {
@@ -42,6 +43,7 @@ export interface InputNumberSemanticStyles {
   suffix?: CSSProperties
   input?: CSSProperties
   actions?: CSSProperties
+  action?: CSSProperties
 }
 
 export type InputNumberClassNamesType = SemanticClassNamesType<
@@ -62,7 +64,9 @@ export interface InputNumberStepContext {
 
 export interface InputNumberProps
   extends ComponentBaseProps,
-  Omit<VcInputNumberProps, 'class' | 'controls' | 'className' | 'style' | 'prefixCls' | 'classNames' | 'styles' | 'prefix' | 'suffix' | 'onChange' | 'onClick' | 'onInput' | 'onBeforeInput' | 'onBlur' | 'onCompositionEnd' | 'onCompositionStart' | 'onKeyDown' | 'onKeyUp' | 'onMouseDown' | 'onMouseEnter' | 'onPressEnter' | 'onMouseUp' | 'onMouseMove' | 'onFocus'> {
+  Omit<VcInputNumberProps, 'class' | 'controls' | 'className' | 'style' | 'prefixCls' | 'classNames' | 'styles' | 'prefix' | 'suffix' | 'onChange' | 'onClick' | 'onInput' | 'onBeforeInput' | 'onBlur' | 'onCompositionEnd' | 'onCompositionStart' | 'onKeyDown' | 'onKeyUp' | 'onMouseDown' | 'onMouseEnter' | 'onPressEnter' | 'onMouseUp' | 'onMouseMove' | 'onFocus'>,
+  /* @vue-ignore */
+  InputNumberEmitsProps {
   size?: SizeType
   status?: InputStatus
   disabled?: boolean
@@ -103,7 +107,27 @@ export interface InputNumberEmits {
   'compositionstart': (e: CompositionEvent) => void
   'compositionend': (e: CompositionEvent) => void
   'beforeinput': (e: InputEvent) => void
-  [key: string]: (...args: any[]) => any
+}
+export interface InputNumberEmitsProps {
+  onChange?: InputNumberEmits['change']
+  'onUpdate:value'?: InputNumberEmits['update:value']
+  onInput?: InputNumberEmits['input']
+  onPressEnter?: InputNumberEmits['pressEnter']
+  onStep?: InputNumberEmits['step']
+  onMousedown?: InputNumberEmits['mousedown']
+  onClick?: InputNumberEmits['click']
+  onMouseup?: InputNumberEmits['mouseup']
+  onMouseleave?: InputNumberEmits['mouseleave']
+  onMousemove?: InputNumberEmits['mousemove']
+  onMouseenter?: InputNumberEmits['mouseenter']
+  onMouseout?: InputNumberEmits['mouseout']
+  onFocus?: InputNumberEmits['focus']
+  onBlur?: InputNumberEmits['blur']
+  onKeydown?: InputNumberEmits['keydown']
+  onKeyup?: InputNumberEmits['keyup']
+  onCompositionstart?: InputNumberEmits['compositionstart']
+  onCompositionend?: InputNumberEmits['compositionend']
+  onBeforeinput?: InputNumberEmits['beforeinput']
 }
 
 export interface InputNumberSlots {
@@ -338,6 +362,7 @@ const InputNumber = defineComponent<
     const handleBeforeInput: InputNumberEmits['beforeinput'] = e => emit('beforeinput', e)
 
     return () => {
+      const { min, max, step } = props
       const prefixNode = getSlotPropsFnRun(slots, props, 'prefix')
       const suffixSlot = getSlotPropsFnRun(slots, props, 'suffix')
       const mergedSuffixFn = () => {
@@ -370,6 +395,9 @@ const InputNumber = defineComponent<
           downHandler={downIcon.value}
           prefix={prefixNode}
           suffix={mergedSuffix}
+          min={min}
+          max={max}
+          step={step}
           onChange={handleChange}
           {
             ...{

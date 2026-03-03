@@ -21,15 +21,15 @@ interface GridColToken extends FullToken<'Grid'> {
 }
 
 // ============================== Row-Shared ==============================
-const genGridRowStyle: GenerateStyle<GridRowToken> = (token): CSSObject => {
+const genGridRowStyle: GenerateStyle<GridRowToken, CSSObject> = (token) => {
   const { componentCls } = token
 
   return {
     // Grid system
     [componentCls]: {
-      'display': 'flex',
-      'flexFlow': 'row wrap',
-      'minWidth': 0,
+      display: 'flex',
+      flexFlow: 'row wrap',
+      minWidth: 0,
 
       '&::before, &::after': {
         display: 'flex',
@@ -84,7 +84,7 @@ const genGridRowStyle: GenerateStyle<GridRowToken> = (token): CSSObject => {
 }
 
 // ============================== Col-Shared ==============================
-const genGridColStyle: GenerateStyle<GridColToken> = (token): CSSObject => {
+const genGridColStyle: GenerateStyle<GridColToken, CSSObject> = (token) => {
   const { componentCls } = token
 
   return {

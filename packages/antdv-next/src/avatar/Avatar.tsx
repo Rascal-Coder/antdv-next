@@ -17,11 +17,13 @@ import useBreakpoint from '../grid/hooks/useBreakpoint'
 import { useAvatarContext } from './AvatarContext'
 import useStyle from './style'
 
-export interface AvatarProps extends ComponentBaseProps {
+export interface AvatarProps extends ComponentBaseProps,
+  /* @vue-ignore */
+  AvatarEmitsProps {
   /** Shape of avatar, options: `circle`, `square` */
   shape?: 'circle' | 'square'
   /**
-   * Size of avatar, options: `large`, `small`, `default`
+   * Size of avatar, options: `large`, `medium`, `small`
    * or a custom number size
    */
   size?: AvatarSize
@@ -31,7 +33,6 @@ export interface AvatarProps extends ComponentBaseProps {
   src?: VueNode
   /** Srcset of image avatar */
   srcSet?: string
-
   draggable?: boolean | 'true' | 'false'
   /** Icon to be used in avatar */
   icon?: VueNode
@@ -46,7 +47,9 @@ export interface AvatarEmits {
   click: (e: MouseEvent) => void
 
   // error: () => boolean
-  [key: string]: (...args: any[]) => any
+}
+export interface AvatarEmitsProps {
+  onClick?: AvatarEmits['click']
 }
 
 export interface AvatarSlots {
@@ -116,10 +119,10 @@ const Avatar = defineComponent<
       }
     }
     const size = useSize(
-      ctxSize => props?.size ?? avatarCtx.value?.size ?? ctxSize ?? 'default',
+      ctxSize => props?.size ?? avatarCtx.value?.size ?? ctxSize ?? 'medium',
     )
     const needResponsive = computed(() => {
-      return Object.keys(typeof size.value === 'object' ? size.value || {} : {}).some(key => ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'].includes(key))
+      return Object.keys(typeof size.value === 'object' ? size.value || {} : {}).some(key => responsiveArray.includes(key as Breakpoint))
     })
     const screens = useBreakpoint(needResponsive)
 

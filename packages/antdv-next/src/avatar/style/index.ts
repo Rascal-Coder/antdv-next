@@ -78,7 +78,7 @@ type AvatarToken = FullToken<'Avatar'> & {
   avatarColor: string
 }
 
-const genBaseStyle: GenerateStyle<AvatarToken> = (token) => {
+const genBaseStyle: GenerateStyle<AvatarToken, CSSObject> = (token) => {
   const {
     antCls,
     componentCls,
@@ -128,17 +128,17 @@ const genBaseStyle: GenerateStyle<AvatarToken> = (token) => {
   return {
     [componentCls]: {
       ...resetComponent(token),
-      'position': 'relative',
-      'display': 'inline-flex',
-      'justifyContent': 'center',
-      'alignItems': 'center',
-      'overflow': 'hidden',
-      'color': avatarColor,
-      'whiteSpace': 'nowrap',
-      'textAlign': 'center',
-      'verticalAlign': 'middle',
-      'background': avatarBg,
-      'border': `${unit(lineWidth)} ${lineType} transparent`,
+      position: 'relative',
+      display: 'inline-flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden',
+      color: avatarColor,
+      whiteSpace: 'nowrap',
+      textAlign: 'center',
+      verticalAlign: 'middle',
+      background: avatarBg,
+      border: `${unit(lineWidth)} ${lineType} transparent`,
 
       '&-image': {
         background: 'transparent',
@@ -168,12 +168,12 @@ const genBaseStyle: GenerateStyle<AvatarToken> = (token) => {
   }
 }
 
-const genGroupStyle: GenerateStyle<AvatarToken> = (token) => {
+const genGroupStyle: GenerateStyle<AvatarToken, CSSObject> = (token) => {
   const { componentCls, groupBorderColor, groupOverlapping, groupSpace } = token
 
   return {
     [`${componentCls}-group`]: {
-      'display': 'inline-flex',
+      display: 'inline-flex',
 
       [componentCls]: {
         borderColor: groupBorderColor,

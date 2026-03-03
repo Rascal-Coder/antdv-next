@@ -42,7 +42,9 @@ export type TagClassNamesType = SemanticClassNamesType<TagProps, TagSemanticClas
 
 export type TagStylesType = SemanticStylesType<TagProps, TagSemanticStyles>
 
-export interface TagProps extends ComponentBaseProps {
+export interface TagProps extends ComponentBaseProps,
+  /* @vue-ignore */
+  TagEmitsProps {
   color?: LiteralUnion<PresetColorType | PresetStatusColorType>
   /** Advised to use closeIcon instead. */
   closable?: ClosableType
@@ -66,7 +68,9 @@ export interface TagSlots {
 
 export interface TagEmits {
   close: (ev: MouseEvent) => void
-  [key: string]: (...args: any[]) => any
+}
+export interface TagEmitsProps {
+  onClose?: TagEmits['close']
 }
 
 const defaultProps: Partial<TagProps> = {

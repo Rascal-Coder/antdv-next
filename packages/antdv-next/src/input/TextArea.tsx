@@ -22,6 +22,7 @@ import { useFormItemInputContext } from '../form/context.tsx'
 import useVariant from '../form/hooks/useVariant'
 import { useCompactItemContext } from '../space/Compact.tsx'
 import { useSharedStyle } from './style'
+
 import useStyle from './style/textarea'
 
 export type TextAreaSemanticName = keyof TextAreaSemanticClassNames & keyof TextAreaSemanticStyles
@@ -49,6 +50,7 @@ export interface TextAreaRef {
   resizableTextArea?: any
   focus: (...args: any[]) => void
   blur: () => void
+  nativeElement: HTMLElement | null
 }
 
 export interface TextAreaProps
@@ -68,7 +70,9 @@ export interface TextAreaProps
     | 'maxLength'
     | 'readOnly'
     | 'minLength'
-  > {
+  >,
+  /* @vue-ignore */
+  TextAreaEmitsProps {
   /** @deprecated Use `variant` instead */
   bordered?: boolean
   size?: SizeType
@@ -95,7 +99,18 @@ export interface TextAreaEmits {
   'compositionend': (e: CompositionEvent) => void
   'mousedown': (e: MouseEvent) => void
   'update:value': (value?: string | number) => void
-  [key: string]: (...args: any[]) => any
+}
+export interface TextAreaEmitsProps {
+  onPressEnter?: TextAreaEmits['pressEnter']
+  onChange?: TextAreaEmits['change']
+  onFocus?: TextAreaEmits['focus']
+  onBlur?: TextAreaEmits['blur']
+  onResize?: TextAreaEmits['resize']
+  onKeydown?: TextAreaEmits['keydown']
+  onCompositionstart?: TextAreaEmits['compositionstart']
+  onCompositionend?: TextAreaEmits['compositionend']
+  onMousedown?: TextAreaEmits['mousedown']
+  'onUpdate:value'?: TextAreaEmits['update:value']
 }
 
 export interface TextAreaSlots {
@@ -218,6 +233,7 @@ const InternalTextArea = defineComponent<
       resizableTextArea: computed(() => textAreaRef.value?.resizableTextArea),
       focus: () => textAreaRef.value?.focus?.(),
       blur: () => textAreaRef.value?.blur?.(),
+      nativeElement: computed(() => textAreaRef.value?.nativeElement),
     })
 
     const handlePressEnter: TextAreaEmits['pressEnter'] = (e) => {

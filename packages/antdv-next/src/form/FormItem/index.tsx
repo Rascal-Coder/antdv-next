@@ -2,12 +2,13 @@ import type { SlotsType } from 'vue'
 import type { ComponentBaseProps } from '../../config-provider/context'
 import type { FormItemLayout } from '../Form'
 import type { FormItemInputProps } from '../FormItemInput'
-import type { FormItemLabelProps, LabelTooltipType } from '../FormItemLabel'
+import type { FormItemLabelProps } from '../FormItemLabel'
 import type { InternalNamePath, Meta, NamePath, Rule, RuleError, RuleObject, ValidateOptions } from '../types'
 import type { ItemHolderProps } from './ItemHolder.tsx'
 import { clsx } from '@v-c/util'
 import { filterEmpty } from '@v-c/util/dist/props-util'
-import { cloneVNode, computed, defineComponent, isVNode, onBeforeUnmount, shallowRef, watch } from 'vue'
+import { computed, createVNode, defineComponent, isVNode, onBeforeUnmount, shallowRef, watch } from 'vue'
+import { getSlotPropsFnRun } from '../../_util/tools.ts'
 import { checkRenderNode } from '../../_util/vueNode.ts'
 import { useComponentBaseConfig } from '../../config-provider/context'
 import useCSSVarCls from '../../config-provider/hooks/useCSSVarCls'
@@ -17,6 +18,7 @@ import { getFieldId, initialValueFormat, toArray } from '../util.ts'
 import { validateRules } from '../utils/validateUtil.ts'
 import { getNamePath, getValue, setValue } from '../utils/valueUtil.ts'
 import ItemHolder from './ItemHolder.tsx'
+
 import StatusProvider from './StatusProvider.tsx'
 
 const NAME_SPLIT = '__SPLIT__'
@@ -35,7 +37,7 @@ export type FeedbackIcons = (itemStatus: {
   warnings?: any[]
 }) => { [key in ValidateStatus]?: any }
 
-interface BaseFormItemProps {
+export interface BaseFormItemProps {
   name?: NamePath
   rules?: Rule[]
   trigger?: string
@@ -56,15 +58,20 @@ export type FormItemProps = BaseFormItemProps
     required?: boolean
     hidden?: boolean
     messageVariables?: Record<string, string>
-    tooltip?: LabelTooltipType
     layout?: FormItemLayout
   }
 
 export interface FormItemEmits {
-  [key: string]: (...args: any[]) => void
 }
+export interface FormItemEmitsProps {
+}
+
 export interface FormItemSlots {
   default: () => any
+  tooltip?: (tooltip?: FormItemLabelProps['tooltip']) => any
+  label?: () => any
+  extra?: () => any
+  help?: () => any
 }
 
 function genEmptyMeta(): Meta {
@@ -78,8 +85,12 @@ function genEmptyMeta(): Meta {
   }
 }
 
+interface InternalFormItemProps extends FormItemProps,
+  /* @vue-ignore */
+  FormItemEmitsProps {}
+
 const InternalFormItem = defineComponent<
-  FormItemProps,
+  InternalFormItemProps,
   FormItemEmits,
   string,
   SlotsType<FormItemSlots>
@@ -102,8 +113,28 @@ const InternalFormItem = defineComponent<
     const [hashId, cssVarCls] = useStyle(prefixCls, rootCls)
 
     const meta = shallowRef<Meta>({ ...genEmptyMeta(), name: namePath.value })
-    watch(namePath, (val) => {
-      meta.value = { ...meta.value, name: val }
+    watch(namePath, (val, prev) => {
+      // In array/list-style fields, index shifts can change the path without unmounting.
+      // Notify parent noStyle aggregator to remove stale error buckets keyed by the old path.
+      const pathChanged = !!(
+        props.noStyle
+        && notifyParentMetaChange
+        && prev?.length
+        && (prev.length !== val.length || prev.some((seg, index) => seg !== val[index]))
+      )
+      if (pathChanged) {
+        notifyParentMetaChange(
+          { ...meta.value, name: prev, destroy: true } as Meta & { destroy: boolean },
+          prev,
+        )
+      }
+      const nextMeta = { ...meta.value, name: val }
+      meta.value = nextMeta
+      if (pathChanged) {
+        // Re-register current validation state under the new path immediately,
+        // otherwise existing errors/warnings can disappear until the next meta update.
+        notifyParentMetaChange!(nextMeta, val)
+      }
     })
 
     const errors = shallowRef<any[]>([])
@@ -126,7 +157,7 @@ const InternalFormItem = defineComponent<
       }
       if (props.required !== undefined) {
         // 继承已有规则中的 type，避免 InputNumber 等组件的类型验证冲突
-        let ruleType = collectedRules.find(r => (r as RuleObject).type)?.type
+        let ruleType = (collectedRules.find(r => (r as RuleObject).type) as any)?.type
         // 如果没有已定义的 type，则根据当前值的类型推断
         if (!ruleType) {
           const currentValue = hasName.value
@@ -407,6 +438,12 @@ const InternalFormItem = defineComponent<
     )
 
     onBeforeUnmount(() => {
+      if (props.noStyle && notifyParentMetaChange) {
+        notifyParentMetaChange(
+          { ...meta.value, destroy: true } as Meta & { destroy: boolean },
+          meta.value.name,
+        )
+      }
       formContext.value?.removeField?.(eventKey.value)
     })
 
@@ -452,7 +489,7 @@ const InternalFormItem = defineComponent<
           },
 
         }
-        baseChildren = cloneVNode(child, newChildProps)
+        baseChildren = createVNode(child.type, newChildProps, child.children)
       }
       if (props.noStyle && !props.hidden) {
         return (
@@ -471,9 +508,38 @@ const InternalFormItem = defineComponent<
         )
       }
 
+      const tooltipSlotValue = getSlotPropsFnRun(slots, props, 'tooltip', false, props.tooltip)
+      let mergedTooltip = props.tooltip
+      if (tooltipSlotValue !== undefined) {
+        const isTooltipOptions = !!(
+          props.tooltip
+          && typeof props.tooltip === 'object'
+          && !Array.isArray(props.tooltip)
+          && !isVNode(props.tooltip)
+        )
+        if (isTooltipOptions) {
+          const isSlotOptions = !!(
+            tooltipSlotValue
+            && typeof tooltipSlotValue === 'object'
+            && !Array.isArray(tooltipSlotValue)
+            && !isVNode(tooltipSlotValue)
+          )
+          mergedTooltip = isSlotOptions
+            ? { ...(props.tooltip as any), ...(tooltipSlotValue as any) }
+            : { ...(props.tooltip as any), title: tooltipSlotValue as any }
+        }
+        else {
+          mergedTooltip = tooltipSlotValue as any
+        }
+      }
+
       return (
         <ItemHolder
           {...props}
+          tooltip={mergedTooltip}
+          label={getSlotPropsFnRun(slots, props, 'label')}
+          extra={getSlotPropsFnRun(slots, props, 'extra')}
+          help={getSlotPropsFnRun(slots, props, 'help')}
           {...attrs}
           rootClass={rootClassName.value}
           prefixCls={prefixCls.value}

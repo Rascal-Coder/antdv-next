@@ -5,6 +5,7 @@ import type { SizeType } from '../config-provider/SizeContext.tsx'
 import type { ColProps } from '../grid'
 import type { FormContextProps, FormFieldRegister } from './context.tsx'
 import type { FeedbackIcons } from './FormItem'
+import type { FormTooltipProps } from './FormItemLabel.tsx'
 import type { FormLabelAlign, ScrollFocusOptions } from './interface'
 import type {
   FieldData,
@@ -32,6 +33,7 @@ import { getFieldId, toArray } from './util.ts'
 import { allPromiseFinish } from './utils/asyncUtil'
 import { defaultValidateMessages } from './utils/messages'
 import { cloneByNamePathList, containsNamePath, getNamePath, setValue } from './utils/valueUtil.ts'
+
 import { useValidateMessagesContext, useValidateMessagesProvider } from './validateMessagesContext.tsx'
 
 export type RequiredMark
@@ -61,7 +63,9 @@ export type FormClassNamesType = SemanticClassNamesType<FormProps, FormSemanticC
 
 export type FormStylesType = SemanticStylesType<FormProps, FormSemanticStyles>
 
-export interface FormProps extends ComponentBaseProps {
+export interface FormProps extends ComponentBaseProps,
+  /* @vue-ignore */
+  FormEmitsProps {
   classes?: FormClassNamesType
   styles?: FormStylesType
   colon?: boolean
@@ -85,6 +89,7 @@ export interface FormProps extends ComponentBaseProps {
   clearOnDestroy?: boolean
   validateOnRuleChange?: boolean
   autoComplete?: string | undefined
+  tooltip?: FormTooltipProps
 }
 
 export interface FormEmits {
@@ -95,7 +100,15 @@ export interface FormEmits {
   validate: (name: InternalNamePath, status: boolean, errors: any[] | null) => void
   valuesChange: (changedValues: Record<string, any>, values: Record<string, any>) => void
   fieldsChange: (changedFields: FieldData[], allFields: FieldData[]) => void
-  [key: string]: (...args: any[]) => void
+}
+export interface FormEmitsProps {
+  onFinish?: FormEmits['finish']
+  onFinishFailed?: FormEmits['finishFailed']
+  onSubmit?: FormEmits['submit']
+  onReset?: FormEmits['reset']
+  onValidate?: FormEmits['validate']
+  onValuesChange?: FormEmits['valuesChange']
+  onFieldsChange?: FormEmits['fieldsChange']
 }
 
 export interface FormSlots {
@@ -146,7 +159,8 @@ const InternalForm = defineComponent<
       style: contextStyle,
       styles: contextStyles,
       classes: contextClassNames,
-    } = useComponentBaseConfig('form', props, ['scrollToFirstError', 'colon', 'requiredMark'])
+      tooltip: contextTooltip,
+    } = useComponentBaseConfig('form', props, ['scrollToFirstError', 'colon', 'requiredMark', 'tooltip'])
     const {
       size,
       styles,
@@ -184,6 +198,12 @@ const InternalForm = defineComponent<
     })
 
     const mergedColon = computed(() => props.colon ?? contextColon.value)
+    const mergedTooltip = computed(() => {
+      return {
+        ...contextTooltip.value,
+        ...props.tooltip,
+      }
+    })
     const mergedValidateMessages = computed(() => ({
       ...defaultValidateMessages,
       ...(contextValidateMessages?.value || {}),
@@ -374,6 +394,7 @@ const InternalForm = defineComponent<
         rules: rules.value,
         model: model.value,
         validateTrigger: validateTrigger.value,
+        tooltip: mergedTooltip.value,
         validateMessages: mergedValidateMessages.value,
         feedbackIcons: feedbackIcons.value,
         addField,
@@ -549,6 +570,7 @@ const InternalForm = defineComponent<
       validate: () => validateFields(),
       submit,
       nativeElement: nativeElementRef,
+      el: nativeElementRef,
       scrollToField: (name: NamePath, options: ScrollFocusOptions | boolean = {}) => {
         scrollToField(getNamePath(name), options)
       },
@@ -627,20 +649,20 @@ const InternalForm = defineComponent<
         mergedClassNames.value.root,
       )
       return (
-        <NoFormStyle status>
-          <form
-            id={name}
-            {...restAttrs}
-            name={name}
-            ref={nativeElementRef}
-            style={[mergedStyles.value.root, contextStyle.value, style]}
-            class={formClassName}
-            onSubmit={handleSubmit}
-            onReset={handleReset}
-          >
+        <form
+          id={name}
+          {...restAttrs}
+          name={name}
+          ref={nativeElementRef}
+          style={[mergedStyles.value.root, contextStyle.value, style]}
+          class={formClassName}
+          onSubmit={handleSubmit}
+          onReset={handleReset}
+        >
+          <NoFormStyle status>
             {slots?.default?.()}
-          </form>
-        </NoFormStyle>
+          </NoFormStyle>
+        </form>
       )
     }
   },

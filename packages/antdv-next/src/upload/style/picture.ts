@@ -1,3 +1,4 @@
+import type { CSSObject } from '@antdv-next/cssinjs'
 import type { UploadToken } from '.'
 import type { GenerateStyle } from '../../theme/internal'
 
@@ -5,7 +6,7 @@ import { blue } from '@ant-design/colors'
 import { unit } from '@antdv-next/cssinjs'
 import { clearFix, textEllipsis } from '../../style'
 
-const genPictureStyle: GenerateStyle<UploadToken> = (token) => {
+const genPictureStyle: GenerateStyle<UploadToken, CSSObject> = (token) => {
   const { componentCls, iconCls, uploadThumbnailSize, uploadProgressOffset, calc } = token
   const listCls = `${componentCls}-list`
   const itemCls = `${listCls}-item`
@@ -19,14 +20,14 @@ const genPictureStyle: GenerateStyle<UploadToken> = (token) => {
         ${listCls}${listCls}-picture-circle
       `]: {
         [itemCls]: {
-          'position': 'relative',
-          'height': calc(uploadThumbnailSize)
+          position: 'relative',
+          height: calc(uploadThumbnailSize)
             .add(calc(token.lineWidth).mul(2))
             .add(calc(token.paddingXS).mul(2))
             .equal(),
-          'padding': token.paddingXS,
-          'border': `${unit(token.lineWidth)} ${token.lineType} ${token.colorBorder}`,
-          'borderRadius': token.borderRadiusLG,
+          padding: token.paddingXS,
+          border: `${unit(token.lineWidth)} ${token.lineType} ${token.colorBorder}`,
+          borderRadius: token.borderRadiusLG,
 
           '&:hover': {
             background: 'transparent',
@@ -97,7 +98,7 @@ const genPictureStyle: GenerateStyle<UploadToken> = (token) => {
   }
 }
 
-const genPictureCardStyle: GenerateStyle<UploadToken> = (token) => {
+const genPictureCardStyle: GenerateStyle<UploadToken, CSSObject> = (token) => {
   const { componentCls, iconCls, fontSizeLG, colorTextLightSolid, calc } = token
 
   const listCls = `${componentCls}-list`
@@ -139,8 +140,10 @@ const genPictureCardStyle: GenerateStyle<UploadToken> = (token) => {
 
       // list
       [`${listCls}${listCls}-picture-card, ${listCls}${listCls}-picture-circle`]: {
-        'display': 'flex',
-        'flexWrap': 'wrap',
+        display: 'flex',
+        flexWrap: 'wrap',
+        minHeight: uploadPictureCardSize,
+
         '@supports not (gap: 1px)': {
           '& > *': {
             marginBlockEnd: token.marginXS,
@@ -167,8 +170,8 @@ const genPictureCardStyle: GenerateStyle<UploadToken> = (token) => {
         },
 
         [itemCls]: {
-          'height': '100%',
-          'margin': 0,
+          height: '100%',
+          margin: 0,
 
           '&::before': {
             position: 'absolute',
@@ -203,19 +206,19 @@ const genPictureCardStyle: GenerateStyle<UploadToken> = (token) => {
             ${iconCls}-download,
             ${iconCls}-delete
           `]: {
-            'zIndex': 10,
-            'width': fontSizeLG,
-            'margin': `0 ${unit(token.marginXXS)}`,
-            'fontSize': fontSizeLG,
-            'cursor': 'pointer',
-            'transition': `all ${token.motionDurationSlow}`,
-            'color': colorTextLightSolid,
+            zIndex: 10,
+            width: fontSizeLG,
+            margin: `0 ${unit(token.marginXXS)}`,
+            fontSize: fontSizeLG,
+            cursor: 'pointer',
+            transition: `all ${token.motionDurationSlow}`,
+            color: colorTextLightSolid,
 
             '&:hover': {
               color: colorTextLightSolid,
             },
 
-            'svg': {
+            svg: {
               verticalAlign: 'baseline',
             },
           },

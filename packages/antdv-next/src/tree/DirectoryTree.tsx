@@ -9,23 +9,24 @@ import { omit } from 'es-toolkit'
 import { computed, defineComponent, shallowRef, watch } from 'vue'
 import { useComponentBaseConfig } from '../config-provider/context.ts'
 import Tree from './Tree.tsx'
+
 import { calcRangeKeys, convertDirectoryKeysToNodes } from './utils/dictUtil.ts'
 
 export type ExpandAction = false | 'click' | 'doubleClick'
 
-export interface DirectoryTreeProps<T extends BasicDataNode = DataNode> extends TreeProps<T> {
+export interface DirectoryTreeProps<T extends BasicDataNode = DataNode> extends TreeProps<T>,
+  /* @vue-ignore */
+  DirectoryTreeEmitsProps {
   expandAction?: ExpandAction
 }
 
 export interface DirectoryTreeEmits extends TreeEmits {
 
 }
-
-export type DirectoryTreeEmitsMap<T extends Record<string, any>> = {
-  [K in keyof T as `on${Capitalize<K & string>}`]: T[K]
+export type DirectoryTreeEmitsProps = {
+  [K in keyof DirectoryTreeEmits as `on${Capitalize<string & K>}`]?: DirectoryTreeEmits[K]
 }
-
-export type DirectoryTreeEmitsType = DirectoryTreeEmitsMap<DirectoryTreeEmits>
+export type DirectoryTreeEmitsType = DirectoryTreeEmitsProps
 export interface DirectoryTreeSlots extends TreeSlots {}
 
 function getIcon(props: AntdTreeNodeAttribute) {
@@ -41,7 +42,7 @@ function getTreeData({ treeData, children }: DirectoryTreeProps & { children: an
 }
 
 const DirectoryTree = defineComponent<
-  DirectoryTreeProps,
+  DirectoryTreeProps<BasicDataNode>,
   DirectoryTreeEmits,
   string,
   SlotsType<DirectoryTreeSlots>
@@ -168,7 +169,8 @@ const DirectoryTree = defineComponent<
         cachedSelectedKeys.value = newSelectedKeys
         newEvent.selectedNodes = convertDirectoryKeysToNodes(treeData, newSelectedKeys, fieldNames)
       }
-      emit('update:expandedKeys', newSelectedKeys)
+      selectedKeys.value = newSelectedKeys
+      emit('update:selectedKeys', newSelectedKeys)
       emit('select', newSelectedKeys, newEvent)
     }
     const { prefixCls, direction } = useComponentBaseConfig('tree', props)
@@ -188,7 +190,7 @@ const DirectoryTree = defineComponent<
       const { className, style, restAttrs } = getAttrStyleAndClass(attrs)
 
       const connectClassName = clsx(
-        `${prefixCls}-directory`,
+        `${prefixCls.value}-directory`,
         {
           [`${prefixCls.value}-directory-rtl`]: direction.value === 'rtl',
         },
@@ -213,7 +215,7 @@ const DirectoryTree = defineComponent<
         },
         onActiveChange(key) {
           emit('activeChange', key)
-          emit('update:activeKey', key)
+          emit('update:activeKey', key!)
         },
         onDrop(info) {
           emit('drop', info)
@@ -230,9 +232,9 @@ const DirectoryTree = defineComponent<
         onDragover(info) {
           emit('dragover', info)
         },
-        onDoubleClick(e) {
-          emit('doubleClick', e)
-          emit('dblclick', e)
+        onDoubleClick(...args) {
+          emit('doubleClick', ...args)
+          emit('dblclick', ...args)
         },
         onContextmenu(e) {
           emit('contextmenu', e)

@@ -30,18 +30,22 @@ export interface AbstractCheckboxGroupProps extends ComponentBaseProps {
   disabled?: boolean
 }
 
-export interface CheckboxGroupProps extends AbstractCheckboxGroupProps {
+export interface CheckboxGroupProps extends AbstractCheckboxGroupProps,
+  /* @vue-ignore */
+  CheckboxGroupEmitsProps {
   name?: string
   defaultValue?: any[]
   value?: any[]
   labelRender?: (params: { item: CheckboxOptionType, index: number }) => any
   role?: string
+  'onUpdate:value'?: (value: any[]) => void
 }
 
 export interface CheckboxGroupEmits {
-  'update:value': (value: any[]) => void
   'change': (checkedValue: any[]) => void
-  [key: string]: (...args: any[]) => void
+}
+export interface CheckboxGroupEmitsProps {
+  onChange?: CheckboxGroupEmits['change']
 }
 
 export interface CheckboxGroupSlots {
@@ -99,7 +103,6 @@ const CheckboxGroup = defineComponent<
       else {
         newValue.splice(optionIndex, 1)
       }
-      value.value = newValue
       const sortVals = newValue
         .filter(val => registeredValues.value.includes(val))
         .sort((a, b) => {
@@ -107,9 +110,11 @@ const CheckboxGroup = defineComponent<
           const indexB = memoizedOptions.value.findIndex(opt => opt.value === b)
           return indexA - indexB
         })
-
       emit('change', sortVals)
-      emit('update:value', sortVals)
+      props?.['onUpdate:value']?.(sortVals)
+      if (props.value === undefined) {
+        value.value = newValue
+      }
     }
     const groupPrefixCls = computed(() => `${prefixCls.value}-group`)
     const rootCls = useCSSVarCls(prefixCls)

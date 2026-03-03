@@ -15,10 +15,15 @@ export interface AnchorLinkBaseProps extends ComponentBaseProps {
 
 export interface AnchorLinkEmits {
   click: (e: MouseEvent, params: { title: any, href: any }) => any
-  [key: string]: (...args: any[]) => any
 }
 
-export type AnchorLinkProps = AnchorLinkBaseProps
+export interface AnchorLinkEmitsProps {
+  onClick?: AnchorLinkEmits['click']
+}
+
+export interface AnchorLinkProps extends AnchorLinkBaseProps,
+  /* @vue-ignore */
+  AnchorLinkEmitsProps {}
 
 const AnchorLink = defineComponent<
   AnchorLinkProps,

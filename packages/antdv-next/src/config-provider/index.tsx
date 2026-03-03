@@ -1,10 +1,9 @@
 import type { App, AppContext, SlotsType, VNodeChild } from 'vue'
 import type { Locale } from '../locale'
 import type { ConfigConsumerProps, Theme, ThemeConfig } from './context'
-import type { ConfigProviderEmits, ConfigProviderProps, ConfigProviderSlots } from './define'
+import type { ConfigProviderProps as BaseConfigProviderProps, ConfigProviderEmits, ConfigProviderSlots } from './define'
 import { createTheme, useStyleContext } from '@antdv-next/cssinjs'
 import { IconContextProvider } from '@antdv-next/icons'
-import defu from 'defu'
 import { computed, defineComponent, shallowReactive } from 'vue'
 import { useWarningProvider } from '../_util/warning.ts'
 import { ANT_MARK, LocaleProvider, useLocaleContext } from '../locale'
@@ -13,17 +12,21 @@ import defaultSeedToken from '../theme/themes/seed'
 import { UniqueProvider } from '../tooltip'
 import { defaultIconPrefixCls, defaultPrefixCls, useConfig, useConfigProvider } from './context'
 import { DisabledContextProvider } from './DisabledContext.tsx'
+import { useExportConfig } from './hooks/useConfig.ts'
 import { useTheme } from './hooks/useTheme.ts'
 import { SizeProvider } from './SizeContext'
+
 import useStyle from './style'
 
 export type { CSPConfig } from './context'
 
-export type {
-  ConfigProviderProps,
+interface ConfigProviderEmitsProps {
+  [key: string]: ConfigProviderEmits[string]
 }
 
-interface ProviderChildrenProps extends ConfigProviderProps {
+interface ProviderChildrenProps extends BaseConfigProviderProps,
+  /* @vue-ignore */
+  ConfigProviderEmitsProps {
   parentContext: ConfigConsumerProps
   legacyLocale?: Locale
 }
@@ -43,8 +46,59 @@ const PASSED_PROPS: Exclude<
   'mentions',
   'form',
   'select',
+  'treeSelect',
   'button',
   'alert',
+  'transformCellText',
+  'progress',
+  'modal',
+  'switch',
+  'dropdown',
+  'colorPicker',
+  'checkbox',
+  'radio',
+  'tag',
+  'avatar',
+  'badge',
+  'card',
+  'drawer',
+  'empty',
+  'floatButton',
+  'floatButtonGroup',
+  'image',
+  'inputNumber',
+  'layout',
+  'menu',
+  'message',
+  'notification',
+  'popconfirm',
+  'popover',
+  'qrcode',
+  'rangePicker',
+  'rate',
+  'result',
+  'segmented',
+  'skeleton',
+  'slider',
+  'spin',
+  'statistic',
+  'steps',
+  'table',
+  'tabs',
+  'textArea',
+  'timeline',
+  'timePicker',
+  'tooltip',
+  'tour',
+  'tree',
+  'upload',
+  'datePicker',
+  'breadcrumb',
+  'masonry',
+  'descriptions',
+  'divider',
+  'flex',
+  'typography',
 ]
 
 const providerDefaultProps: any = {
@@ -122,7 +176,6 @@ const ProviderChildren = defineComponent<
     const iconPrefixCls = computed(() => props.iconPrefixCls ?? props?.parentContext?.iconPrefixCls ?? defaultIconPrefixCls)
     const csp = computed(() => props.csp ?? props?.parentContext?.csp)
     useStyle(iconPrefixCls, csp)
-
     const mergedTheme = useTheme(
       theme,
       parentTheme,
@@ -144,7 +197,16 @@ const ProviderChildren = defineComponent<
         locale: props.locale || props.legacyLocale,
         space: props.space,
       } as ConfigConsumerProps
-      const config = defu(parentConfig, baseConfig)
+
+      const config: ConfigConsumerProps = {
+        ...parentConfig,
+      }
+
+      ;(Object.keys(baseConfig) as (keyof typeof baseConfig)[]).forEach((key) => {
+        if (baseConfig[key] !== undefined) {
+          (config as any)[key] = baseConfig[key]
+        }
+      })
       // Pass the props used by `useContext` directly with child component.
       // These props should merged into `config`.
       PASSED_PROPS.forEach((propName) => {
@@ -190,7 +252,6 @@ const ProviderChildren = defineComponent<
         ...defaultSeedToken,
         ...token,
       }
-
       return {
         ...rest,
         theme: themeObj,
@@ -251,8 +312,12 @@ const ProviderChildren = defineComponent<
   },
 )
 
+export interface InternalConfigProviderProps extends BaseConfigProviderProps,
+  /* @vue-ignore */
+  ConfigProviderEmitsProps {}
+
 const ConfigProvider = defineComponent<
-  ConfigProviderProps,
+  InternalConfigProviderProps,
   ConfigProviderEmits,
   string,
   SlotsType<ConfigProviderSlots>
@@ -263,7 +328,6 @@ const ConfigProvider = defineComponent<
     return () => {
       const renderEmpty = slots?.renderEmpty ?? props?.renderEmpty
       const transformCellText = slots?.transformCellText ?? props?.transformCellText
-
       return (
         <ProviderChildren
           parentContext={context.value}
@@ -283,6 +347,7 @@ const ConfigProvider = defineComponent<
 )
 
 ;(ConfigProvider as any).config = setGlobalConfig
+;(ConfigProvider as any).useConfig = useExportConfig
 
 ;(ConfigProvider as any).install = (app: App) => {
   app.component(ConfigProvider.name, ConfigProvider)
@@ -290,7 +355,10 @@ const ConfigProvider = defineComponent<
 
 export default ConfigProvider as typeof ConfigProvider & {
   config: (props: GlobalConfigProps) => void
+  useConfig: typeof useExportConfig
 }
+
+export type ConfigProviderProps = InternalConfigProviderProps
 
 export function globalConfig() {
   return {
@@ -319,4 +387,4 @@ export function globalConfig() {
   }
 }
 
-export { useConfig }
+export { useConfig, useExportConfig }

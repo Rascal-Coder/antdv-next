@@ -10,12 +10,12 @@ import {
   h,
   nextTick,
   onBeforeUnmount,
+  onMounted,
   shallowRef,
   watch,
   watchEffect,
 } from 'vue'
 import { getAttrStyleAndClass, useMergeSemantic, useToArr, useToProps } from '../../_util/hooks'
-import isNonNullable from '../../_util/isNonNullable'
 import { isStyleSupport } from '../../_util/styleChecker'
 import { toPropsRefs } from '../../_util/tools'
 import { useComponentBaseConfig } from '../../config-provider/context'
@@ -30,6 +30,7 @@ import Typography from '../Typography'
 import CopyBtn from './CopyBtn'
 import Ellipsis from './Ellipsis'
 import EllipsisTooltip from './EllipsisTooltip'
+
 import { isEleEllipsis, isValidText, toList } from './util'
 
 const ELLIPSIS_STR = '...'
@@ -65,8 +66,16 @@ function wrapperDecorations(props: BlockProps, content: any) {
   return currentContent
 }
 
+export type TypographyBaseEmitsProps = {
+  [K in keyof TypographyBaseEmits as `on${Capitalize<string & K>}`]?: TypographyBaseEmits[K]
+}
+
+interface InternalBlockProps extends BlockProps,
+  /* @vue-ignore */
+  TypographyBaseEmitsProps {}
+
 const Base = defineComponent<
-  BlockProps,
+  InternalBlockProps,
   TypographyBaseEmits,
   string,
   SlotsType<TypographySlots>
@@ -116,10 +125,7 @@ const Base = defineComponent<
     // ========================== Editable ==========================
     const [enableEdit, editConfig] = useMergedConfig<EditConfig>(computed(() => props.editable))
     const editing = shallowRef(editConfig.value.editing ?? false)
-    watch(editConfig, (config) => {
-      if (config.editing !== undefined)
-        editing.value = !!config.editing
-    })
+    watch(() => editConfig.value.editing, val => (editing.value = !!val))
     const triggerType = computed(() => editConfig.value.triggerType ?? ['icon'])
 
     const triggerEdit = (edit: boolean) => {
@@ -147,8 +153,6 @@ const Base = defineComponent<
 
     const onEditClick = (e?: MouseEvent) => {
       e?.preventDefault()
-      if (props.disabled)
-        return
       triggerEdit(true)
     }
 
@@ -175,8 +179,6 @@ const Base = defineComponent<
     })
 
     const handleCopyClick = async (e?: MouseEvent) => {
-      if (props.disabled)
-        return
       await onCopyClick(e)
       emit('copy', e as any)
     }
@@ -184,6 +186,7 @@ const Base = defineComponent<
     // ========================== Ellipsis ==========================
     const isLineClampSupport = shallowRef(false)
     const isTextOverflowSupport = shallowRef(false)
+    const supportCheckMounted = shallowRef(false)
 
     const isJsEllipsis = shallowRef(false)
     const isNativeEllipsis = shallowRef(false)
@@ -200,8 +203,7 @@ const Base = defineComponent<
     watch(
       () => ellipsisConfig.value.expanded,
       (val) => {
-        if (val !== undefined)
-          expanded.value = val
+        expanded.value = !!val
       },
     )
 
@@ -219,7 +221,14 @@ const Base = defineComponent<
       )
     })
 
+    onMounted(() => {
+      supportCheckMounted.value = true
+    })
+
     watchEffect(() => {
+      if (!supportCheckMounted.value)
+        return
+
       if (enableEllipsis.value && !needMeasureEllipsis.value) {
         isLineClampSupport.value = isStyleSupport('webkitLineClamp')
         isTextOverflowSupport.value = isStyleSupport('textOverflow')
@@ -262,6 +271,8 @@ const Base = defineComponent<
     }
 
     const ellipsisWidth = shallowRef(0)
+    const isHoveringOperations = shallowRef(false)
+    const isHoveringTypography = shallowRef(false)
     const onResize = ({ offsetWidth }: { offsetWidth: number }) => {
       ellipsisWidth.value = offsetWidth
     }
@@ -337,8 +348,6 @@ const Base = defineComponent<
     // Expand
     const renderExpand = () => {
       const { expandable, symbol } = ellipsisConfig.value
-      if (props.disabled)
-        return null
       return expandable
         ? (
             <button
@@ -357,13 +366,13 @@ const Base = defineComponent<
 
     // Edit
     const renderEdit = () => {
-      if (!enableEdit.value || props.disabled)
+      if (!enableEdit.value)
         return null
 
       const { icon, tooltip, tabIndex } = editConfig.value
       const tooltipNodes = toList(tooltip as any)
 
-      const editTitle = tooltip === false ? '' : (tooltipNodes[0] ?? textLocale?.value?.edit)
+      const editTitle = tooltipNodes[0] || textLocale?.value?.edit
       const ariaLabel = typeof editTitle === 'string' ? editTitle : ''
 
       return triggerType.value.includes('icon')
@@ -387,7 +396,7 @@ const Base = defineComponent<
 
     // Copy
     const renderCopy = () => {
-      if (!enableCopy.value || props.disabled)
+      if (!enableCopy.value)
         return null
 
       return (
@@ -399,7 +408,7 @@ const Base = defineComponent<
           locale={textLocale?.value}
           onCopy={handleCopyClick}
           loading={copyLoading.value}
-          iconOnly={!isNonNullable(getChildrenText.value)}
+          iconOnly={childrenNodes.value.length === 0}
           className={mergedClassNames.value.copy as any}
           style={mergedStyles.value.copy as any}
         />
@@ -407,11 +416,30 @@ const Base = defineComponent<
     }
 
     const renderOperations = (canEllipsis: boolean) => {
-      return [
-        canEllipsis && renderExpand(),
-        renderEdit(),
-        renderCopy(),
-      ]
+      const expandNode = canEllipsis && renderExpand()
+      const editNode = renderEdit()
+      const copyNode = renderCopy()
+
+      if (!expandNode && !editNode && !copyNode) {
+        return null
+      }
+
+      return (
+        <span
+          key="operations"
+          class={`${prefixCls.value}-actions`}
+          onMouseenter={() => {
+            isHoveringOperations.value = true
+          }}
+          onMouseleave={() => {
+            isHoveringOperations.value = false
+          }}
+        >
+          {expandNode}
+          {editNode}
+          {copyNode}
+        </span>
+      )
     }
 
     const renderEllipsis = (canEllipsis: boolean) => {
@@ -433,12 +461,19 @@ const Base = defineComponent<
         [`${prefixCls.value}-ellipsis`]: enableEllipsis.value,
         [`${prefixCls.value}-ellipsis-single-line`]: cssTextOverflow.value,
         [`${prefixCls.value}-ellipsis-multiple-line`]: cssLineClamp.value,
+        [`${prefixCls.value}-link`]: props.component === 'a',
       },
       mergedClassNames.value.root,
     ))
 
     return () => {
       const { className: attrClass, style: attrStyle, restAttrs } = getAttrStyleAndClass(attrs)
+      const onMouseenter = (restAttrs as any).onMouseenter ?? (restAttrs as any).onMouseEnter
+      const onMouseleave = (restAttrs as any).onMouseleave ?? (restAttrs as any).onMouseLeave
+      delete (restAttrs as any).onMouseenter
+      delete (restAttrs as any).onMouseEnter
+      delete (restAttrs as any).onMouseleave
+      delete (restAttrs as any).onMouseLeave
       const children = filterEmpty(slots?.default?.())
       childrenNodes.value = children
       const clickHandler = triggerType.value.includes('text')
@@ -479,6 +514,7 @@ const Base = defineComponent<
             tooltipProps={tooltipProps.value}
             enableEllipsis={mergedEnableEllipsis.value}
             isEllipsis={isMergedEllipsis.value}
+            open={isHoveringTypography.value && !isHoveringOperations.value}
           >
             <Typography
               class={mergedClassName}
@@ -488,6 +524,14 @@ const Base = defineComponent<
               ref={typographyRef}
               direction={mergedDirection.value}
               onClick={clickHandler}
+              onMouseenter={(e: MouseEvent) => {
+                isHoveringTypography.value = true
+                onMouseenter?.(e)
+              }}
+              onMouseleave={(e: MouseEvent) => {
+                isHoveringTypography.value = false
+                onMouseleave?.(e)
+              }}
               title={props.title!}
               aria-label={topAriaLabel.value as any}
               rootClass={props.rootClass}
@@ -511,8 +555,6 @@ const Base = defineComponent<
                   enableEdit.value,
                   enableCopy.value,
                   textLocale?.value,
-                  ellipsisConfig.value.suffix,
-                  ellipsisConfig.value.symbol,
                   ...DECORATION_PROPS.map(key => (props as any)[key]),
                 ]}
               >

@@ -1,3 +1,5 @@
+import type { CSSObject } from '@antdv-next/cssinjs'
+
 import type { FullToken, GenerateStyle } from '../../theme/internal'
 import { genCompactItemStyle } from '../../style/compact-item'
 import { genStyleHooks } from '../../theme/internal'
@@ -11,7 +13,7 @@ interface SpaceToken extends FullToken<'Space'> {
   // Custom token here
 }
 
-const genSpaceAddonStyle: GenerateStyle<SpaceToken> = (token) => {
+const genSpaceAddonStyle: GenerateStyle<SpaceToken, CSSObject> = (token) => {
   const {
     componentCls,
     borderRadius,
@@ -35,13 +37,13 @@ const genSpaceAddonStyle: GenerateStyle<SpaceToken> = (token) => {
       // ==                         Base                         ==
       // ==========================================================
       {
-        'display': 'inline-flex',
-        'alignItems': 'center',
-        'gap': 0,
-        'paddingInline': paddingSM,
-        'margin': 0,
-        'borderWidth': lineWidth,
-        'borderStyle': 'solid',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 0,
+        paddingInline: paddingSM,
+        margin: 0,
+        borderWidth: lineWidth,
+        borderStyle: 'solid',
         borderRadius,
 
         '&:hover': {
@@ -91,8 +93,8 @@ const genSpaceAddonStyle: GenerateStyle<SpaceToken> = (token) => {
         [varName('addon-border-color-outlined')]: colorBorder,
         [varName('addon-background-filled')]: colorBgContainerDisabled,
 
-        'borderColor': varRef('addon-border-color'),
-        'background': varRef('addon-background'),
+        borderColor: varRef('addon-border-color'),
+        background: varRef('addon-background'),
 
         // ======================= Outlined =======================
         '&-variant-outlined': {

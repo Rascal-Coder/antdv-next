@@ -11,7 +11,7 @@ import VcTooltip from '@v-c/tooltip'
 import { clsx } from '@v-c/util'
 import { filterEmpty, removeUndefined } from '@v-c/util/dist/props-util'
 import { getTransitionName } from '@v-c/util/dist/utils/transition'
-import { computed, createVNode, defineComponent, isVNode, shallowRef, watchEffect } from 'vue'
+import { computed, createVNode, defineComponent, isVNode, shallowRef, watch } from 'vue'
 import { ContextIsolator } from '../_util/ContextIsolator.tsx'
 import { useMergeSemantic, useToArr, useToProps, useZIndex } from '../_util/hooks'
 import getPlacements from '../_util/placements.ts'
@@ -101,7 +101,9 @@ export interface TriggerCommonApi extends ComponentBaseProps {
   motion?: VcTooltipProps['motion']
 }
 
-export interface TooltipProps extends TriggerCommonApi {
+export interface TooltipProps extends TriggerCommonApi,
+  /* @vue-ignore */
+  TooltipEmitsProps {
   afterOpenChange?: (open: boolean) => void
   builtinPlacements?: typeof Placements
   title?: VueNode
@@ -113,7 +115,11 @@ export interface TooltipProps extends TriggerCommonApi {
 export interface TooltipEmits {
   'openChange': (open: boolean) => void
   'update:open': (open: boolean) => void
-  [key: string]: (...args: any[]) => void
+}
+
+export interface TooltipEmitsProps {
+  onOpenChange?: TooltipEmits['openChange']
+  'onUpdate:open'?: TooltipEmits['update:open']
 }
 
 export interface TooltipSlots {
@@ -179,11 +185,18 @@ const InternalTooltip = defineComponent<
 
     // ============================== Open ==============================
     const open = shallowRef(props?.defaultOpen ?? false)
-    watchEffect(() => {
-      if (props.open !== undefined) {
-        open.value = props.open
-      }
-    })
+    watch(
+      () => props.open,
+      (val, prevVal) => {
+        if (val !== undefined) {
+          open.value = val
+        }
+        else if (prevVal !== undefined) {
+          open.value = false
+        }
+      },
+      { immediate: true },
+    )
     let noTitle = false
     const onInternalOpenChange = (vis: boolean) => {
       if (props.open === undefined) {
@@ -201,7 +214,7 @@ const InternalTooltip = defineComponent<
         || getPlacements({
           arrowPointAtCenter: mergedArrow?.value?.pointAtCenter ?? false,
           autoAdjustOverflow: autoAdjustOverflow.value,
-          arrowWidth: mergedShowArrow ? token.value.sizePopupArrow : 0,
+          arrowWidth: mergedShowArrow.value ? token.value.sizePopupArrow : 0,
           borderRadius: token.value.borderRadius,
           offset: token.value.marginXXS,
           visibleFirst: true,
@@ -243,6 +256,7 @@ const InternalTooltip = defineComponent<
         motion,
         destroyOnHidden,
         openClass,
+        arrow: _arrow,
         ...restProps
       } = props
       const title = getSlotPropsFnRun(slots, props, 'title')

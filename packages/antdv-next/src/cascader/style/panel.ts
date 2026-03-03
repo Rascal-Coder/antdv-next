@@ -8,18 +8,18 @@ import { genComponentStyleHook } from '../../theme/internal'
 import getColumnsStyle from './columns'
 
 // ============================== Panel ===============================
-const genPanelStyle: GenerateStyle<CascaderToken> = (token: CascaderToken): CSSObject => {
+const genPanelStyle: GenerateStyle<CascaderToken, CSSObject> = (token) => {
   const { componentCls } = token
 
   return {
     [`${componentCls}-panel`]: [
       getColumnsStyle(token),
       {
-        'display': 'inline-flex',
-        'border': `${unit(token.lineWidth)} ${token.lineType} ${token.colorSplit}`,
-        'borderRadius': token.borderRadiusLG,
-        'overflowX': 'auto',
-        'maxWidth': '100%',
+        display: 'inline-flex',
+        border: `${unit(token.lineWidth)} ${token.lineType} ${token.colorSplit}`,
+        borderRadius: token.borderRadiusLG,
+        overflowX: 'auto',
+        maxWidth: '100%',
 
         [`${componentCls}-menus`]: {
           alignItems: 'stretch',

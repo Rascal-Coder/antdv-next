@@ -26,7 +26,7 @@ const genButtonCompactStyle: GenerateStyle<ButtonToken> = (token) => {
         [varName('compact-connect-border-color')]: varRef('bg-color-hover'),
 
         [`&${solidSelector}`]: {
-          'transition': `none`,
+          transition: `none`,
 
           [`& + ${solidSelector}:before`]: [
             {

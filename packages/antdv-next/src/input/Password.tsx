@@ -15,7 +15,9 @@ type VisibilityToggle = boolean | { visible?: boolean, onVisibleChange?: (visibl
 
 type PasswordAction = 'click' | 'hover'
 
-export interface PasswordProps extends Omit<BaseInputProps, 'type'> {
+export interface PasswordProps extends Omit<BaseInputProps, 'type'>,
+  /* @vue-ignore */
+  PasswordEmitsProps {
   inputPrefixCls?: string
   action?: PasswordAction
   visibilityToggle?: VisibilityToggle
@@ -26,6 +28,9 @@ export interface PasswordProps extends Omit<BaseInputProps, 'type'> {
 
 export interface PasswordEmits extends BaseInputEmits {
   'update:iconVisible': (visible: boolean) => void
+}
+export interface PasswordEmitsProps {
+  'onUpdate:iconVisible'?: PasswordEmits['update:iconVisible']
 }
 
 export interface PasswordSlots {
@@ -158,12 +163,12 @@ const InternalPassword = defineComponent<
           onChange={handleChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          onPressEnter={e => emit('pressEnter', e)}
+          onPressEnter={(e: any) => emit('pressEnter', e)}
           onClear={() => emit('clear')}
-          onCompositionstart={e => emit('compositionStart', e)}
-          onCompositionend={e => emit('compositionEnd', e)}
-          onKeydown={e => emit('keydown', e)}
-          onKeyup={e => emit('keyup', e)}
+          onCompositionstart={(e: any) => emit('compositionstart', e)}
+          onCompositionend={(e: any) => emit('compositionend', e)}
+          onKeydown={(e: any) => emit('keydown', e)}
+          onKeyup={(e: any) => emit('keyup', e)}
           v-slots={{
             ...omit(slots, ['suffix', 'iconRender']),
           }}

@@ -8,19 +8,24 @@ interface MergedArrow {
 }
 
 function useMergedArrow(
-  providedArrow: Ref<TooltipConfig['arrow']>,
-  providedContextArrow: Ref<TooltipConfig['arrow']>,
+  providedArrow?: Ref<TooltipConfig['arrow'] | undefined>,
+  providedContextArrow?: Ref<TooltipConfig['arrow'] | undefined>,
 ): ComputedRef<MergedArrow> {
   const toConfig = (arrow?: boolean | TooltipConfig['arrow']): Partial<MergedArrow> =>
     typeof arrow === 'boolean' ? { show: arrow } : arrow || {}
 
   return computed(() => {
-    const arrowConfig = toConfig(providedArrow.value)
-    const contextArrowConfig = toConfig(providedContextArrow.value)
+    const arrowConfig = toConfig(providedArrow?.value)
+    const contextArrowConfig = toConfig(providedContextArrow?.value)
+
+    const finalShow = providedArrow?.value !== undefined
+      ? (arrowConfig.show ?? true)
+      : (contextArrowConfig.show ?? true)
+
     return {
       ...contextArrowConfig,
       ...arrowConfig,
-      show: arrowConfig.show ?? contextArrowConfig.show ?? true,
+      show: finalShow,
     }
   })
 }

@@ -51,7 +51,6 @@ export interface DatePickerEmits<DateType = AnyObject> {
   'focus': (e: FocusEvent, info: any) => void
   'blur': (e: FocusEvent, info: any) => void
   'keydown': (e: KeyboardEvent, preventDefault: VoidFunction) => void
-  [key: string]: (...args: any[]) => void
 }
 
 export interface DatePickerSlots {
@@ -65,6 +64,23 @@ export interface DatePickerSlots {
   [key: string]: any
 }
 
+export interface DatePickerEmitsProps<DateType = AnyObject> {
+  onChange?: DatePickerEmits<DateType>['change']
+  'onUpdate:value'?: DatePickerEmits<DateType>['update:value']
+  onCalendarChange?: DatePickerEmits<DateType>['calendarChange']
+  onPanelChange?: DatePickerEmits<DateType>['panelChange']
+  onOpenChange?: DatePickerEmits<DateType>['openChange']
+  onOk?: DatePickerEmits<DateType>['ok']
+  onSelect?: DatePickerEmits<DateType>['select']
+  onFocus?: DatePickerEmits<DateType>['focus']
+  onBlur?: DatePickerEmits<DateType>['blur']
+  onKeydown?: DatePickerEmits<DateType>['keydown']
+}
+
+export interface InternalPickerProps<DateType extends AnyObject = AnyObject> extends PickerProps<DateType>,
+  /* @vue-ignore */
+  Omit<DatePickerEmitsProps<DateType>, keyof PickerProps<DateType>> {}
+
 function generatePicker<DateType extends AnyObject = AnyObject>(generateConfig: GenerateConfig<DateType>) {
   type DatePickerProps = PickerProps<DateType>
   type TimePickerProps = GenericTimePickerProps<DateType>
@@ -75,7 +91,7 @@ function generatePicker<DateType extends AnyObject = AnyObject>(generateConfig: 
     const name = displayName ? `A${displayName}` : 'ADatePicker'
 
     return defineComponent<
-      PickerProps<DateType>,
+      InternalPickerProps<DateType>,
       DatePickerEmits<DateType>,
       string,
       SlotsType<DatePickerSlots>
@@ -112,7 +128,8 @@ function generatePicker<DateType extends AnyObject = AnyObject>(generateConfig: 
           rootPrefixCls,
           class: contextClassName,
           style: contextStyle,
-        } = useComponentBaseConfig(pickerType as any, props as any, [], 'picker')
+          suffixIcon: contextSuffixIcon,
+        } = useComponentBaseConfig(pickerType as any, props as any, ['suffixIcon'], 'picker')
 
         const { compactSize, compactItemClassnames } = useCompactItemContext(prefixCls, direction)
 
@@ -295,7 +312,7 @@ function generatePicker<DateType extends AnyObject = AnyObject>(generateConfig: 
                 picker: mergedPicker.value,
                 hasFeedback,
                 feedbackIcon,
-                suffixIcon: mergedSuffixIcon,
+                suffixIcon: mergedSuffixIcon === undefined ? contextSuffixIcon?.value : mergedSuffixIcon,
               }}
             />
           )

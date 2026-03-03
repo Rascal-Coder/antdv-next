@@ -1,3 +1,4 @@
+import type { CSSObject } from '@antdv-next/cssinjs'
 import type { FullToken, GenerateStyle, GenStyleFn, GetDefaultToken } from '../../theme/internal'
 
 import { Keyframes, unit } from '@antdv-next/cssinjs'
@@ -139,7 +140,7 @@ const antBadgeLoadingCircle = new Keyframes('antBadgeLoadingCircle', {
   },
 })
 
-const genSharedBadgeStyle: GenerateStyle<BadgeToken> = (token) => {
+const genSharedBadgeStyle: GenerateStyle<BadgeToken, CSSObject> = (token) => {
   const {
     componentCls,
     iconCls,
@@ -159,7 +160,7 @@ const genSharedBadgeStyle: GenerateStyle<BadgeToken> = (token) => {
 
   const colorPreset = genPresetColor(token, (colorKey, { darkColor }) => ({
     [`&${componentCls} ${componentCls}-color-${colorKey}`]: {
-      'background': darkColor,
+      background: darkColor,
       [`&:not(${componentCls}-count)`]: {
         color: darkColor,
       },
@@ -172,29 +173,29 @@ const genSharedBadgeStyle: GenerateStyle<BadgeToken> = (token) => {
   return {
     [componentCls]: {
       ...resetComponent(token),
-      'position': 'relative',
-      'display': 'inline-block',
-      'width': 'fit-content',
-      'lineHeight': 1,
+      position: 'relative',
+      display: 'inline-block',
+      width: 'fit-content',
+      lineHeight: 1,
 
       [`${componentCls}-count`]: {
-        'display': 'inline-flex',
-        'justifyContent': 'center',
-        'zIndex': token.indicatorZIndex,
-        'minWidth': indicatorHeight,
-        'height': indicatorHeight,
-        'color': token.badgeTextColor,
-        'fontWeight': textFontWeight,
-        'fontSize': textFontSize,
-        'lineHeight': unit(indicatorHeight),
-        'whiteSpace': 'nowrap',
-        'textAlign': 'center',
-        'background': token.badgeColor,
-        'borderRadius': calc(indicatorHeight).div(2).equal(),
-        'boxShadow': `0 0 0 ${unit(badgeShadowSize)} ${token.badgeShadowColor}`,
-        'transition': `background-color ${token.motionDurationMid}`,
+        display: 'inline-flex',
+        justifyContent: 'center',
+        zIndex: token.indicatorZIndex,
+        minWidth: indicatorHeight,
+        height: indicatorHeight,
+        color: token.badgeTextColor,
+        fontWeight: textFontWeight,
+        fontSize: textFontSize,
+        lineHeight: unit(indicatorHeight),
+        whiteSpace: 'nowrap',
+        textAlign: 'center',
+        background: token.badgeColor,
+        borderRadius: calc(indicatorHeight).div(2).equal(),
+        boxShadow: `0 0 0 ${unit(badgeShadowSize)} ${token.badgeShadowColor}`,
+        transition: `background-color ${token.motionDurationMid}`,
 
-        'a': {
+        a: {
           color: token.badgeTextColor,
         },
         'a:hover': {
@@ -261,10 +262,10 @@ const genSharedBadgeStyle: GenerateStyle<BadgeToken> = (token) => {
           backgroundColor: token.colorSuccess,
         },
         [`${componentCls}-status-processing`]: {
-          'overflow': 'visible',
-          'color': token.colorInfo,
-          'backgroundColor': token.colorInfo,
-          'borderColor': 'currentcolor',
+          overflow: 'visible',
+          color: token.colorInfo,
+          backgroundColor: token.colorInfo,
+          borderColor: 'currentcolor',
 
           '&::after': {
             position: 'absolute',
@@ -372,7 +373,7 @@ const genSharedBadgeStyle: GenerateStyle<BadgeToken> = (token) => {
 }
 
 // ============================== Export ==============================
-export const prepareToken: (token: Parameters<GenStyleFn<'Badge'>>[0]) => BadgeToken = (token) => {
+export function prepareToken(token: Parameters<GenStyleFn<'Badge'>>[0]) {
   const { fontHeight, lineWidth, marginXS, colorBorderBg } = token
 
   const badgeFontHeight = fontHeight

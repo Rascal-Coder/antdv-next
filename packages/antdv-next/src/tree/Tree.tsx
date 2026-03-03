@@ -175,7 +175,9 @@ export interface TreeProps<T extends BasicDataNode = DataNode>
     | 'onRightClick'
     | 'onScroll'
     | 'style'
-  > {
+  >,
+  /* @vue-ignore */
+  TreeEmitsProps {
   rootClass?: string
   showLine?: boolean | { showLeafIcon: boolean | TreeLeafIcon }
   classes?: TreeClassNamesType
@@ -245,11 +247,39 @@ export interface TreeEmits {
   'mouseenter': NonNullable<VcTreeProps['onMouseEnter']>
   'scroll': NonNullable<VcTreeProps['onScroll']>
   'activeChange': NonNullable<VcTreeProps['onActiveChange']>
+  'keydown': NonNullable<VcTreeProps['onKeyDown']>
   'update:expandedKeys': (keys: Key[]) => void
   'update:checkedKeys': (keys: Key[] | { checked: Key[], halfChecked: Key[] }) => void
   'update:selectedKeys': (keys: Key[]) => void
   'update:activeKey': (key: Key) => void
-  [key: string]: (...args: any) => void
+}
+export interface TreeEmitsProps {
+  onClick?: TreeEmits['click']
+  onCheck?: TreeEmits['check']
+  onExpand?: TreeEmits['expand']
+  onSelect?: TreeEmits['select']
+  onBlur?: TreeEmits['blur']
+  onFocus?: TreeEmits['focus']
+  onRightClick?: TreeEmits['rightClick']
+  onDblclick?: TreeEmits['dblclick']
+  onDoubleClick?: TreeEmits['doubleClick']
+  onContextmenu?: TreeEmits['contextmenu']
+  onDragstart?: TreeEmits['dragstart']
+  onDragenter?: TreeEmits['dragenter']
+  onDragover?: TreeEmits['dragover']
+  onDragleave?: TreeEmits['dragleave']
+  onDrop?: TreeEmits['drop']
+  onDragend?: TreeEmits['dragend']
+  onLoad?: TreeEmits['load']
+  onMouseleave?: TreeEmits['mouseleave']
+  onMouseenter?: TreeEmits['mouseenter']
+  onScroll?: TreeEmits['scroll']
+  onActiveChange?: TreeEmits['activeChange']
+  onKeydown?: TreeEmits['keydown']
+  'onUpdate:expandedKeys'?: TreeEmits['update:expandedKeys']
+  'onUpdate:checkedKeys'?: TreeEmits['update:checkedKeys']
+  'onUpdate:selectedKeys'?: TreeEmits['update:selectedKeys']
+  'onUpdate:activeKey'?: TreeEmits['update:activeKey']
 }
 
 export interface TreeSlots {
@@ -269,7 +299,7 @@ const defaults = {
 } as any
 
 const Tree = defineComponent<
-  TreeProps,
+  TreeProps<BasicDataNode>,
   TreeEmits,
   string,
   SlotsType<TreeSlots>
@@ -395,7 +425,7 @@ const Tree = defineComponent<
         },
         onActiveChange(key) {
           emit('activeChange', key)
-          emit('update:activeKey', key)
+          emit('update:activeKey', key!)
         },
         onDrop(info) {
           emit('drop', info)
@@ -412,9 +442,9 @@ const Tree = defineComponent<
         onDragOver(info) {
           emit('dragover', info)
         },
-        onDoubleClick(e) {
-          emit('doubleClick', e)
-          emit('dblclick', e)
+        onDoubleClick(...args) {
+          emit('doubleClick', ...args)
+          emit('dblclick', ...args)
         },
         onContextMenu(e) {
           emit('contextmenu', e)

@@ -1,23 +1,25 @@
 import type { CSSProperties, InjectionKey, Ref, SlotsType } from 'vue'
-
+import type { Breakpoint } from '../_util/responsiveObserver'
 import { BarsOutlined, LeftOutlined, RightOutlined } from '@antdv-next/icons'
 import { classNames } from '@v-c/util'
 import canUseDom from '@v-c/util/dist/Dom/canUseDom'
 import { omit } from 'es-toolkit'
-import { computed, defineComponent, inject, onBeforeUnmount, provide, ref, shallowRef, watch, watchEffect } from 'vue'
+import { computed, defineComponent, inject, onBeforeUnmount, provide, ref, shallowRef, watch } from 'vue'
 import { addMediaQueryListener, removeMediaQueryListener } from '../_util/mediaQueryUtil.ts'
 import { getSlotPropsFnRun } from '../_util/tools.ts'
 import { useBaseConfig } from '../config-provider/context.ts'
 import { useLayoutCtx } from './context.ts'
+
 import useStyle from './style/sider'
 
-const dimensionMaxMap = {
+const dimensionMaxMap: Record<Breakpoint, string> = {
   xs: '479.98px',
   sm: '575.98px',
   md: '767.98px',
   lg: '991.98px',
   xl: '1199.98px',
   xxl: '1599.98px',
+  xxxl: `1839.98px`,
 }
 
 function isNumeric(val: any) {
@@ -44,7 +46,9 @@ export type CollapseType = 'clickTrigger' | 'responsive'
 
 export type SiderTheme = 'light' | 'dark'
 
-export interface SiderProps {
+export interface SiderProps extends
+  /* @vue-ignore */
+  SiderEmitsProps {
   prefixCls?: string
   collapsible?: boolean
   collapsed?: boolean
@@ -53,7 +57,7 @@ export interface SiderProps {
   zeroWidthTriggerStyle?: CSSProperties
   width?: number | string
   collapsedWidth?: number | string
-  breakpoint?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'
+  breakpoint?: Breakpoint
   theme?: SiderTheme
 }
 
@@ -61,7 +65,11 @@ export interface SiderEmits {
   'collapse': (collapsed: boolean, type: CollapseType) => void
   'update:collapsed': (collapsed: boolean) => void
   'breakpoint': (broken: boolean) => void
-  [key: string]: (...args: any[]) => any
+}
+export interface SiderEmitsProps {
+  onCollapse?: SiderEmits['collapse']
+  'onUpdate:collapsed'?: SiderEmits['update:collapsed']
+  onBreakpoint?: SiderEmits['breakpoint']
 }
 
 export interface SiderSlots {
@@ -96,10 +104,15 @@ const Sider = defineComponent<
   SlotsType<SiderSlots>
 >((props = defaultProps, { emit, slots, attrs }) => {
   const { siderHook } = useLayoutCtx()
-  const collapsed = shallowRef(false)
-  watchEffect(() => {
-    collapsed.value = !!(props.collapsed === undefined ? props.defaultCollapsed : props.collapsed)
-  })
+  const collapsed = shallowRef(!!(props.collapsed === undefined ? props.defaultCollapsed : props.collapsed))
+  watch(
+    () => props.collapsed,
+    (value) => {
+      if (value !== undefined) {
+        collapsed.value = !!value
+      }
+    },
+  )
   const below = shallowRef(false)
 
   const handleSetCollapsed = (value: boolean, type: CollapseType) => {
@@ -118,7 +131,7 @@ const Sider = defineComponent<
   const responsiveHandler: (mql: MediaQueryListEvent | MediaQueryList) => void = (mql) => {
     below.value = mql.matches
     emit('breakpoint', mql.matches)
-    if (!collapsed.value !== mql.matches) {
+    if (collapsed.value !== mql.matches) {
       handleSetCollapsed(mql.matches, 'responsive')
     }
   }
@@ -219,7 +232,7 @@ const Sider = defineComponent<
       {
         [`${prefixCls.value}-collapsed`]: collapsed.value,
         [`${prefixCls.value}-has-trigger`]: collapsible && trigger !== null && !zeroWidthTrigger,
-        [`${prefixCls.value}-below`]: !!below,
+        [`${prefixCls.value}-below`]: !!below.value,
         [`${prefixCls.value}-zero-width`]: Number.parseFloat(siderWidth.value) === 0,
       },
       (attrs as any).class,

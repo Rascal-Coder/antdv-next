@@ -1,3 +1,5 @@
+import type { CSSObject } from '@antdv-next/cssinjs'
+
 import type { FullToken, GenerateStyle, GetDefaultToken } from '../../theme/internal'
 import { genStyleHooks, mergeToken } from '../../theme/internal'
 
@@ -11,12 +13,12 @@ interface SpaceToken extends FullToken<'Space'> {
   spaceGapLargeSize: number
 }
 
-const genSpaceStyle: GenerateStyle<SpaceToken> = (token) => {
+const genSpaceStyle: GenerateStyle<SpaceToken, CSSObject> = (token) => {
   const { componentCls, antCls } = token
 
   return {
     [componentCls]: {
-      'display': 'inline-flex',
+      display: 'inline-flex',
       '&-rtl': {
         direction: 'rtl',
       },
@@ -24,7 +26,7 @@ const genSpaceStyle: GenerateStyle<SpaceToken> = (token) => {
         flexDirection: 'column',
       },
       '&-align': {
-        'flexDirection': 'column',
+        flexDirection: 'column',
         '&-center': {
           alignItems: 'center',
         },
@@ -49,7 +51,7 @@ const genSpaceStyle: GenerateStyle<SpaceToken> = (token) => {
   }
 }
 
-const genSpaceGapStyle: GenerateStyle<SpaceToken> = (token) => {
+const genSpaceGapStyle: GenerateStyle<SpaceToken, CSSObject> = (token) => {
   const { componentCls } = token
   return {
     [componentCls]: {

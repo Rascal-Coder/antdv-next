@@ -59,7 +59,7 @@ export function genBoxStyle(position?: PositionType): CSSObject {
   }
 }
 
-export function genImageCoverStyle(token: ImageToken): CSSObject {
+export const genImageCoverStyle: GenerateStyle<ImageToken, CSSObject> = (token) => {
   const { componentCls, motionDurationSlow, colorTextLightSolid } = token
   return {
     [componentCls]: {
@@ -92,7 +92,7 @@ export function genImageCoverStyle(token: ImageToken): CSSObject {
   }
 }
 
-export const genImagePreviewStyle: GenerateStyle<ImageToken> = (token: ImageToken) => {
+export const genImagePreviewStyle: GenerateStyle<ImageToken, CSSObject> = (token) => {
   const {
     motionEaseOut,
     previewCls,
@@ -115,17 +115,17 @@ export const genImagePreviewStyle: GenerateStyle<ImageToken> = (token: ImageToke
   const operationBgHover = operationBg.clone().setA(0.2)
 
   const singleBtn: CSSObject = {
-    'position': 'absolute',
-    'color': colorTextLightSolid,
-    'backgroundColor': operationBg.toRgbString(),
-    'borderRadius': '50%',
-    'padding': paddingSM,
-    'outline': 0,
-    'border': 0,
-    'cursor': 'pointer',
-    'transition': `all ${motionDurationSlow}`,
-    'display': 'flex',
-    'fontSize': previewOperationSize,
+    position: 'absolute',
+    color: colorTextLightSolid,
+    backgroundColor: operationBg.toRgbString(),
+    borderRadius: '50%',
+    padding: paddingSM,
+    outline: 0,
+    border: 0,
+    cursor: 'pointer',
+    transition: `all ${motionDurationSlow}`,
+    display: 'flex',
+    fontSize: previewOperationSize,
 
     '&:hover': {
       backgroundColor: operationBgHover.toRgbString(),
@@ -160,9 +160,9 @@ export const genImagePreviewStyle: GenerateStyle<ImageToken> = (token: ImageToke
       [`${previewCls}-body`]: {
         ...genBoxStyle(),
         'pointer-events': 'none',
-        'display': 'flex',
-        'alignItems': 'center',
-        'justifyContent': 'center',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
 
         '> *': {
           pointerEvents: 'auto',
@@ -194,8 +194,8 @@ export const genImagePreviewStyle: GenerateStyle<ImageToken> = (token: ImageToke
       // ================ Switch ================
       [`${previewCls}-switch`]: {
         ...singleBtn,
-        'top': '50%',
-        'transform': `translateY(-50%)`,
+        top: '50%',
+        transform: `translateY(-50%)`,
 
         '&-disabled': {
           '&, &:hover, &:active': {
@@ -231,18 +231,18 @@ export const genImagePreviewStyle: GenerateStyle<ImageToken> = (token: ImageToke
 
       // =============== Actions ================
       [`${previewCls}-actions`]: {
-        'display': 'flex',
-        'gap': paddingSM,
-        'padding': `0 ${unit(paddingLG)}`,
-        'backgroundColor': operationBg.toRgbString(),
-        'borderRadius': 100,
-        'fontSize': previewOperationSize,
+        display: 'flex',
+        gap: paddingSM,
+        padding: `0 ${unit(paddingLG)}`,
+        backgroundColor: operationBg.toRgbString(),
+        borderRadius: 100,
+        fontSize: previewOperationSize,
 
         '&-action': {
-          'padding': paddingSM,
-          'cursor': 'pointer',
-          'transition': `all ${motionDurationSlow}`,
-          'display': 'flex',
+          padding: paddingSM,
+          cursor: 'pointer',
+          transition: `all ${motionDurationSlow}`,
+          display: 'flex',
 
           [`&:not(${previewCls}-actions-action-disabled):hover`]: {
             color: previewOperationHoverColor,
@@ -257,7 +257,7 @@ export const genImagePreviewStyle: GenerateStyle<ImageToken> = (token: ImageToke
   }
 }
 
-const genImageStyle: GenerateStyle<ImageToken> = (token: ImageToken) => {
+const genImageStyle: GenerateStyle<ImageToken, CSSObject> = (token) => {
   const { componentCls } = token
   return {
     // ============================== image ==============================
@@ -284,16 +284,16 @@ const genImageStyle: GenerateStyle<ImageToken> = (token: ImageToken) => {
   }
 }
 
-const genPreviewMotion: GenerateStyle<ImageToken> = (token) => {
+const genPreviewMotion: GenerateStyle<ImageToken, CSSObject> = (token) => {
   const { previewCls, motionDurationSlow } = token
 
   return {
     [previewCls]: {
       '&-fade': {
-        'transition': `opacity ${motionDurationSlow}`,
+        transition: `opacity ${motionDurationSlow}`,
 
         '&-enter, &-appear': {
-          'opacity': 0,
+          opacity: 0,
 
           [`${previewCls}-body`]: {
             transform: 'scale(0)',
@@ -310,7 +310,7 @@ const genPreviewMotion: GenerateStyle<ImageToken> = (token) => {
         },
 
         '&-leave': {
-          'opacity': 1,
+          opacity: 1,
 
           '&-active': {
             opacity: 0,

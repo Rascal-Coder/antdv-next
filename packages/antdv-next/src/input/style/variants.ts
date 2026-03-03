@@ -1,39 +1,36 @@
 import type { CSSObject } from '@antdv-next/cssinjs'
-import type { InputToken } from './token'
+import type { GenerateStyle } from '../../theme/internal'
 
+import type { InputToken } from './token'
 import { unit } from '@antdv-next/cssinjs'
 import { mergeToken } from '../../theme/internal'
 
-export function genHoverStyle(token: InputToken): CSSObject {
-  return {
-    borderColor: token.hoverBorderColor,
-    backgroundColor: token.hoverBg,
-  }
-}
+export const genHoverStyle: GenerateStyle<InputToken, CSSObject> = token => ({
+  borderColor: token.hoverBorderColor,
+  backgroundColor: token.hoverBg,
+})
 
-export function genDisabledStyle(token: InputToken): CSSObject {
-  return {
-    'color': token.colorTextDisabled,
-    'backgroundColor': token.colorBgContainerDisabled,
-    'borderColor': token.colorBorder,
-    'boxShadow': 'none',
-    'cursor': 'not-allowed',
-    'opacity': 1,
+export const genDisabledStyle: GenerateStyle<InputToken, CSSObject> = token => ({
+  color: token.colorTextDisabled,
+  backgroundColor: token.colorBgContainerDisabled,
+  borderColor: token.colorBorder,
+  boxShadow: 'none',
+  cursor: 'not-allowed',
+  opacity: 1,
 
-    'input[disabled], textarea[disabled]': {
-      cursor: 'not-allowed',
-    },
+  'input[disabled], textarea[disabled]': {
+    cursor: 'not-allowed',
+  },
 
-    '&:hover:not([disabled])': {
-      ...genHoverStyle(
-        mergeToken<InputToken>(token, {
-          hoverBorderColor: token.colorBorder,
-          hoverBg: token.colorBgContainerDisabled,
-        }),
-      ),
-    },
-  }
-}
+  '&:hover:not([disabled])': {
+    ...genHoverStyle(
+      mergeToken<InputToken>(token, {
+        hoverBorderColor: token.colorBorder,
+        hoverBg: token.colorBgContainerDisabled,
+      }),
+    ),
+  },
+})
 
 /* ============== Outlined ============== */
 export function genBaseOutlinedStyle(token: InputToken, options: {
@@ -43,10 +40,10 @@ export function genBaseOutlinedStyle(token: InputToken, options: {
   activeShadow: string
 }): CSSObject {
   return {
-    'background': token.colorBgContainer,
-    'borderWidth': token.lineWidth,
-    'borderStyle': token.lineType,
-    'borderColor': options.borderColor,
+    background: token.colorBgContainer,
+    borderWidth: token.lineWidth,
+    borderStyle: token.lineType,
+    borderColor: options.borderColor,
 
     '&:hover': {
       borderColor: options.hoverBorderColor,
@@ -136,44 +133,42 @@ function genOutlinedGroupStatusStyle(token: InputToken, options: {
   }
 }
 
-export function genOutlinedGroupStyle(token: InputToken): CSSObject {
-  return {
-    '&-outlined': {
-      [`${token.componentCls}-group`]: {
-        '&-addon': {
-          background: token.addonBg,
-          border: `${unit(token.lineWidth)} ${token.lineType} ${token.colorBorder}`,
-        },
-
-        '&-addon:first-child': {
-          borderInlineEnd: 0,
-        },
-
-        '&-addon:last-child': {
-          borderInlineStart: 0,
-        },
+export const genOutlinedGroupStyle: GenerateStyle<InputToken, CSSObject> = token => ({
+  '&-outlined': {
+    [`${token.componentCls}-group`]: {
+      '&-addon': {
+        background: token.addonBg,
+        border: `${unit(token.lineWidth)} ${token.lineType} ${token.colorBorder}`,
       },
 
-      ...genOutlinedGroupStatusStyle(token, {
-        status: 'error',
-        addonBorderColor: token.colorError,
-        addonColor: token.colorErrorText,
-      }),
+      '&-addon:first-child': {
+        borderInlineEnd: 0,
+      },
 
-      ...genOutlinedGroupStatusStyle(token, {
-        status: 'warning',
-        addonBorderColor: token.colorWarning,
-        addonColor: token.colorWarningText,
-      }),
-
-      [`&${token.componentCls}-group-wrapper-disabled`]: {
-        [`${token.componentCls}-group-addon`]: {
-          ...genDisabledStyle(token),
-        },
+      '&-addon:last-child': {
+        borderInlineStart: 0,
       },
     },
-  }
-}
+
+    ...genOutlinedGroupStatusStyle(token, {
+      status: 'error',
+      addonBorderColor: token.colorError,
+      addonColor: token.colorErrorText,
+    }),
+
+    ...genOutlinedGroupStatusStyle(token, {
+      status: 'warning',
+      addonBorderColor: token.colorWarning,
+      addonColor: token.colorWarningText,
+    }),
+
+    [`&${token.componentCls}-group-wrapper-disabled`]: {
+      [`${token.componentCls}-group-addon`]: {
+        ...genDisabledStyle(token),
+      },
+    },
+  },
+})
 
 /* ============ Borderless ============ */
 export function genBorderlessStyle(token: InputToken, extraStyles?: CSSObject): CSSObject {
@@ -181,8 +176,20 @@ export function genBorderlessStyle(token: InputToken, extraStyles?: CSSObject): 
 
   return {
     '&-borderless': {
-      'background': 'transparent',
-      'border': 'none',
+      background: 'transparent',
+      border: 'none',
+
+      // Compensate for the removed border to maintain consistent height with other components
+      // (e.g. Select borderless) that keep a transparent border.
+      paddingBlock: token.calc(token.paddingBlock).add(token.lineWidth).equal(),
+
+      [`&${componentCls}-sm, &${componentCls}-affix-wrapper-sm`]: {
+        paddingBlock: token.calc(token.paddingBlockSM).add(token.lineWidth).equal(),
+      },
+
+      [`&${componentCls}-lg, &${componentCls}-affix-wrapper-lg`]: {
+        paddingBlock: token.calc(token.paddingBlockLG).add(token.lineWidth).equal(),
+      },
 
       '&:focus, &:focus-within': {
         outline: 'none',
@@ -220,10 +227,10 @@ function genBaseFilledStyle(token: InputToken, options: {
   inputColor?: string
 }) {
   return {
-    'background': options.bg,
-    'borderWidth': token.lineWidth,
-    'borderStyle': token.lineType,
-    'borderColor': 'transparent',
+    background: options.bg,
+    borderWidth: token.lineWidth,
+    borderStyle: token.lineType,
+    borderColor: 'transparent',
 
     'input&, & input, textarea&, & textarea': {
       color: options?.inputColor ?? 'unset',
@@ -312,52 +319,50 @@ function genFilledGroupStatusStyle(token: InputToken, options: {
   }
 }
 
-export function genFilledGroupStyle(token: InputToken): CSSObject {
-  return {
-    '&-filled': {
-      [`${token.componentCls}-group-addon`]: {
-        'background': token.colorFillTertiary,
+export const genFilledGroupStyle: GenerateStyle<InputToken, CSSObject> = token => ({
+  '&-filled': {
+    [`${token.componentCls}-group-addon`]: {
+      background: token.colorFillTertiary,
 
-        '&:last-child': {
-          position: 'static',
-        },
+      '&:last-child': {
+        position: 'static',
       },
+    },
 
-      ...genFilledGroupStatusStyle(token, {
-        status: 'error',
-        addonBg: token.colorErrorBg,
-        addonColor: token.colorErrorText,
-      }),
+    ...genFilledGroupStatusStyle(token, {
+      status: 'error',
+      addonBg: token.colorErrorBg,
+      addonColor: token.colorErrorText,
+    }),
 
-      ...genFilledGroupStatusStyle(token, {
-        status: 'warning',
-        addonBg: token.colorWarningBg,
-        addonColor: token.colorWarningText,
-      }),
+    ...genFilledGroupStatusStyle(token, {
+      status: 'warning',
+      addonBg: token.colorWarningBg,
+      addonColor: token.colorWarningText,
+    }),
 
-      [`&${token.componentCls}-group-wrapper-disabled`]: {
-        [`${token.componentCls}-group`]: {
-          '&-addon': {
-            background: token.colorFillTertiary,
-            color: token.colorTextDisabled,
-          },
+    [`&${token.componentCls}-group-wrapper-disabled`]: {
+      [`${token.componentCls}-group`]: {
+        '&-addon': {
+          background: token.colorFillTertiary,
+          color: token.colorTextDisabled,
+        },
 
-          '&-addon:first-child': {
-            borderInlineStart: `${unit(token.lineWidth)} ${token.lineType} ${token.colorBorder}`,
-            borderTop: `${unit(token.lineWidth)} ${token.lineType} ${token.colorBorder}`,
-            borderBottom: `${unit(token.lineWidth)} ${token.lineType} ${token.colorBorder}`,
-          },
+        '&-addon:first-child': {
+          borderInlineStart: `${unit(token.lineWidth)} ${token.lineType} ${token.colorBorder}`,
+          borderTop: `${unit(token.lineWidth)} ${token.lineType} ${token.colorBorder}`,
+          borderBottom: `${unit(token.lineWidth)} ${token.lineType} ${token.colorBorder}`,
+        },
 
-          '&-addon:last-child': {
-            borderInlineEnd: `${unit(token.lineWidth)} ${token.lineType} ${token.colorBorder}`,
-            borderTop: `${unit(token.lineWidth)} ${token.lineType} ${token.colorBorder}`,
-            borderBottom: `${unit(token.lineWidth)} ${token.lineType} ${token.colorBorder}`,
-          },
+        '&-addon:last-child': {
+          borderInlineEnd: `${unit(token.lineWidth)} ${token.lineType} ${token.colorBorder}`,
+          borderTop: `${unit(token.lineWidth)} ${token.lineType} ${token.colorBorder}`,
+          borderBottom: `${unit(token.lineWidth)} ${token.lineType} ${token.colorBorder}`,
         },
       },
     },
-  }
-}
+  },
+})
 
 /* ============== Underlined ============== */
 // https://github.com/ant-design/ant-design/issues/51379
@@ -368,11 +373,11 @@ export function genBaseUnderlinedStyle(token: InputToken, options: {
   activeShadow: string
 }): CSSObject {
   return {
-    'background': token.colorBgContainer,
-    'borderWidth': `${unit(token.lineWidth)} 0`,
-    'borderStyle': `${token.lineType} none`,
-    'borderColor': `transparent transparent ${options.borderColor} transparent`,
-    'borderRadius': 0,
+    background: token.colorBgContainer,
+    borderWidth: `${unit(token.lineWidth)} 0`,
+    borderStyle: `${token.lineType} none`,
+    borderColor: `transparent transparent ${options.borderColor} transparent`,
+    borderRadius: 0,
     '&:hover': {
       borderColor: `transparent transparent ${options.hoverBorderColor} transparent`,
       backgroundColor: token.hoverBg,
@@ -420,9 +425,9 @@ export function genUnderlinedStyle(token: InputToken, extraStyles?: CSSObject): 
 
       // >>>>> Disabled
       [`&${token.componentCls}-disabled, &[disabled]`]: {
-        'color': token.colorTextDisabled,
-        'boxShadow': 'none',
-        'cursor': 'not-allowed',
+        color: token.colorTextDisabled,
+        boxShadow: 'none',
+        cursor: 'not-allowed',
         '&:hover': {
           borderColor: `transparent transparent ${token.colorBorder} transparent`,
         },

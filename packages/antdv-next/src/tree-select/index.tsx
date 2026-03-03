@@ -132,7 +132,9 @@ interface BaseTreeSelectProps<ValueType = any, OptionType extends DataNode = Dat
 }
 
 export interface TreeSelectProps<ValueType = any, OptionType extends DataNode = DataNode>
-  extends BaseTreeSelectProps<ValueType, OptionType> {
+  extends BaseTreeSelectProps<ValueType, OptionType>,
+  /* @vue-ignore */
+  TreeSelectEmitsProps {
   styles?: TreeSelectStylesType
   classes?: TreeSelectClassNamesType
   suffixIcon?: VueNode
@@ -175,6 +177,8 @@ export interface TreeSelectProps<ValueType = any, OptionType extends DataNode = 
 }
 
 export interface TreeSelectEmits {
+  'focus': (e: FocusEvent) => void
+  'blur': (e: FocusEvent) => void
   'openChange': (open: boolean) => void
   'dropdownVisibleChange': (open: boolean) => void
   'select': NonNullable<VcTreeSelectProps['onSelect']>
@@ -185,7 +189,20 @@ export interface TreeSelectEmits {
   'deselect': NonNullable<VcTreeSelectProps['onDeselect']>
   'popupScroll': NonNullable<VcTreeSelectProps['onPopupScroll']>
   'search': NonNullable<VcTreeSelectProps['onSearch']>
-  [key: string]: (...args: any[]) => void
+}
+export interface TreeSelectEmitsProps {
+  onFocus?: TreeSelectEmits['focus']
+  onBlur?: TreeSelectEmits['blur']
+  onOpenChange?: TreeSelectEmits['openChange']
+  onDropdownVisibleChange?: TreeSelectEmits['dropdownVisibleChange']
+  onSelect?: TreeSelectEmits['select']
+  onTreeExpand?: TreeSelectEmits['treeExpand']
+  onTreeLoad?: TreeSelectEmits['treeLoad']
+  onChange?: TreeSelectEmits['change']
+  'onUpdate:value'?: TreeSelectEmits['update:value']
+  onDeselect?: TreeSelectEmits['deselect']
+  onPopupScroll?: TreeSelectEmits['popupScroll']
+  onSearch?: TreeSelectEmits['search']
 }
 
 export interface TreeSelectSlots {
@@ -471,6 +488,37 @@ const InternalTreeSelect = defineComponent<
       }
 
       // ==================== Render =====================
+      const onAttrs: Partial<VcTreeSelectProps> = {
+        onFocus(e) {
+          emit('focus', e)
+        },
+        onBlur(e) {
+          emit('blur', e)
+        },
+        onSelect(value, option) {
+          emit('select', value, option)
+        },
+        onChange(value, labelList, extra) {
+          emit('change', value, labelList, extra)
+          emit('update:value', value)
+        },
+        onDeselect(value, option) {
+          emit('deselect', value, option)
+        },
+        onTreeExpand(expandedKeys) {
+          emit('treeExpand', expandedKeys)
+        },
+        onTreeLoad(loadedKeys) {
+          emit('treeLoad', loadedKeys)
+        },
+        onPopupScroll(e) {
+          emit('popupScroll', e)
+        },
+        onSearch(value) {
+          emit('search', value)
+        },
+      }
+
       const selectProps = omit(restProps, [
         'suffixIcon',
         'removeIcon',
@@ -479,6 +527,8 @@ const InternalTreeSelect = defineComponent<
         'switcherIcon',
         'classes',
         'styles',
+        // #209，事件重复传递
+        ...Object.keys(onAttrs),
       ])
 
       const mergedClassName = clsx(
@@ -515,30 +565,6 @@ const InternalTreeSelect = defineComponent<
 
       const tagRender = slots?.tagRender ?? props?.tagRender
 
-      const onAttrs: Partial<VcTreeSelectProps> = {
-        onSelect(value, option) {
-          emit('select', value, option)
-        },
-        onChange(value, labelList, extra) {
-          emit('change', value, labelList, extra)
-          emit('update:value', value)
-        },
-        onDeselect(value, option) {
-          emit('deselect', value, option)
-        },
-        onTreeExpand(expandedKeys) {
-          emit('treeExpand', expandedKeys)
-        },
-        onTreeLoad(loadedKeys) {
-          emit('treeLoad', loadedKeys)
-        },
-        onPopupScroll(e) {
-          emit('popupScroll', e)
-        },
-        onSearch(value) {
-          emit('search', value)
-        },
-      }
       return (
         <VcTreeSelect
           {...restAttrs}

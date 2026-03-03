@@ -6,13 +6,15 @@ import { clsx } from '@v-c/util'
 import { computed, defineComponent } from 'vue'
 import { getAttrStyleAndClass } from '../_util/hooks'
 import { getSlotPropsFnRun, toPropsRefs } from '../_util/tools'
+import { useComponentBaseConfig } from '../config-provider/context'
 import { DefaultRenderEmpty } from '../config-provider/defaultRenderEmpty'
 import { useDisabledContext } from '../config-provider/DisabledContext'
 import useCSSVarCls from '../config-provider/hooks/useCSSVarCls'
 import useBase from './hooks/useBase'
 import useCheckable from './hooks/useCheckable'
-import useColumnIcons from './hooks/useColumnIcons'
+import useIcons from './hooks/useIcons'
 import useStyle from './style'
+
 import usePanelStyle from './style/panel'
 
 export type PanelPickType
@@ -38,12 +40,17 @@ export interface CascaderPanelProps<
   OptionType extends DefaultOptionType = DefaultOptionType,
   ValueField extends keyof OptionType = keyof OptionType,
   Multiple extends boolean = boolean,
-> extends Pick<CascaderProps<OptionType, ValueField, Multiple>, PanelPickType> {}
+> extends Pick<CascaderProps<OptionType, ValueField, Multiple>, PanelPickType>,
+  /* @vue-ignore */
+  CascaderPanelEmitsProps {}
 
 export interface CascaderPanelEmits {
   'change': NonNullable<VcCascaderProps['onChange']>
   'update:value': (value: any) => void
-  [key: string]: (...args: any[]) => void
+}
+export interface CascaderPanelEmitsProps {
+  onChange?: CascaderPanelEmits['change']
+  'onUpdate:value'?: CascaderPanelEmits['update:value']
 }
 
 export interface CascaderPanelSlots {
@@ -67,6 +74,8 @@ const CascaderPanel = defineComponent<
       customizePrefixCls,
       propDirection,
     )
+
+    const { expandIcon: contextExpandIcon, loadingIcon: contextLoadingIcon } = useComponentBaseConfig('cascader', props, ['expandIcon', 'loadingIcon'])
     const isRtl = computed(() => mergedDirection.value === 'rtl')
 
     const rootCls = useCSSVarCls(cascaderPrefixCls)
@@ -89,12 +98,18 @@ const CascaderPanel = defineComponent<
         expandIcon,
         prefixCls: _prefixCls,
         direction: _direction,
-        loadingIcon: _loadingIcon,
+        loadingIcon,
         ...rest
       } = props
       const { className, style, restAttrs } = getAttrStyleAndClass(attrs)
       const customExpandIcon = getSlotPropsFnRun(slots, props, 'expandIcon', false) ?? expandIcon
-      const [mergedExpandIcon, loadingIcon] = useColumnIcons(isRtl.value, customExpandIcon)
+      const { expandIcon: mergedExpandIcon, loadingIcon: mergedLoadingIcon } = useIcons({
+        contextExpandIcon: contextExpandIcon.value,
+        contextLoadingIcon: contextLoadingIcon.value,
+        expandIcon: customExpandIcon,
+        loadingIcon,
+        isRtl: isRtl.value,
+      })
       const checkable = useCheckable(cascaderPrefixCls.value, multiple)
 
       const slotNotFound = getSlotPropsFnRun(slots, props, 'notFoundContent', false)
@@ -124,7 +139,7 @@ const CascaderPanel = defineComponent<
           notFoundContent={mergedNotFoundContent}
           direction={mergedDirection.value}
           expandIcon={mergedExpandIcon}
-          loadingIcon={loadingIcon}
+          loadingIcon={mergedLoadingIcon}
           disabled={mergedDisabled.value}
           optionRender={mergedOptionRender}
           onChange={onChange}

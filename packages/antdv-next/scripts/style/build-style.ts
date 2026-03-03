@@ -5,12 +5,13 @@ import { createCache, extractStyle, StyleProvider } from '@antdv-next/cssinjs'
 import { createSSRApp, Fragment, h } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 // eslint-disable-next-line antfu/no-import-dist
-import * as _antd from '../../dist/components.mjs'
+import * as _antd from '../../dist/components.js'
 
 const antd = (_antd as any).components_exports ?? _antd
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const output = path.resolve(__dirname, '../../dist/antd.css')
+const distOutput = path.resolve(__dirname, '../../dist/antd.css')
+const docsOutput = path.resolve(__dirname, '../../../../docs/src/assets/antd.css')
 
 const blackList = ['ConfigProvider', 'Grid']
 
@@ -224,11 +225,13 @@ async function extractStyleText(customTheme?: (node: ReturnType<typeof h>) => Re
 }
 
 async function buildStyle() {
-  await fs.mkdir(path.dirname(output), { recursive: true })
-  await fs.rm(output, { force: true })
   const styleText = await extractStyleText()
-  await fs.writeFile(output, styleText)
-  console.log(`Style output saved to dist/antd.css`)
+  for (const output of [distOutput, docsOutput]) {
+    await fs.mkdir(path.dirname(output), { recursive: true })
+    await fs.rm(output, { force: true })
+    await fs.writeFile(output, styleText)
+  }
+  console.log(`Style output saved to: ${distOutput}, ${docsOutput}`)
 }
 
 async function main() {

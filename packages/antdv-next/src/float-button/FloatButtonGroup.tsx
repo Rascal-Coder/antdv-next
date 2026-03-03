@@ -58,7 +58,9 @@ export type FloatButtonGroupStylesType = SemanticStylesType<
   FloatButtonGroupSemanticStyles
 >
 
-export interface FloatButtonGroupProps extends Omit<FloatButtonProps, 'classes' | 'styles'>, ComponentBaseProps {
+export interface FloatButtonGroupProps extends Omit<FloatButtonProps, 'classes' | 'styles'>, ComponentBaseProps,
+  /* @vue-ignore */
+  FloatButtonGroupEmitsProps {
   // Styles
   classes?: FloatButtonGroupClassNamesType
   styles?: FloatButtonGroupStylesType
@@ -83,7 +85,11 @@ export interface FloatButtonGroupEmits {
   'openChange': (open: boolean) => void
   'update:open': (open: boolean) => void
   'click': (e: MouseEvent) => void
-  [key: string]: (...args: any[]) => void
+}
+export interface FloatButtonGroupEmitsProps {
+  onOpenChange?: FloatButtonGroupEmits['openChange']
+  'onUpdate:open'?: FloatButtonGroupEmits['update:open']
+  onClick?: FloatButtonGroupEmits['click']
 }
 
 const groupOmittedProps: (keyof FloatButtonGroupProps)[] = [
@@ -154,9 +160,7 @@ const InternalFloatButtonGroup = defineComponent<
 
     const open = shallowRef(props.open ?? props.defaultOpen ?? false)
     watch(() => props.open, (val) => {
-      if (val !== undefined) {
-        open.value = !!val
-      }
+      open.value = !!val
     })
 
     const triggerMode = computed(() => trigger.value && ['click', 'hover'].includes(trigger.value))

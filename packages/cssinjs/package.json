@@ -1,7 +1,7 @@
 {
   "name": "@antdv-next/cssinjs",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "cssinjs solution for ant-design-vue",
   "repository": {
     "type": "git",
@@ -10,21 +10,24 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.mts",
-      "import": "./dist/index.mjs",
-      "default": "./dist/index.mjs"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./cssinjs-utils": {
-      "types": "./dist/cssinjs-utils/index.d.mts",
-      "import": "./dist/cssinjs-utils/index.mjs",
-      "default": "./dist/cssinjs-utils/index.mjs"
+      "types": "./dist/cssinjs-utils/index.d.ts",
+      "import": "./dist/cssinjs-utils/index.js",
+      "default": "./dist/cssinjs-utils/index.js"
     },
     "./dist/*": {
-      "types": "./dist/*.d.mts",
-      "import": "./dist/*.mjs",
-      "default": "./dist/*.mjs"
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.js",
+      "default": "./dist/*.js"
     }
   },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist",
     "package.json"
@@ -34,6 +37,7 @@
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
+    "prepare": "pnpm build",
     "prepublish": "pnpm build",
     "build": "tsdown",
     "dev": "tsdown --watch",
@@ -47,7 +51,6 @@
     "@emotion/unitless": "catalog:prod",
     "@v-c/util": "catalog:vc",
     "csstype": "catalog:prod",
-    "defu": "catalog:prod",
     "stylis": "catalog:prod"
   },
   "devDependencies": {

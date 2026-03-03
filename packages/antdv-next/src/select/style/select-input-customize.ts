@@ -1,7 +1,9 @@
+import type { CSSObject } from '@antdv-next/cssinjs'
+
 import type { GenerateStyle } from '../../theme/interface'
 import type { SelectToken } from './token'
 
-const genSelectInputCustomizeStyle: GenerateStyle<SelectToken> = (token) => {
+const genSelectInputCustomizeStyle: GenerateStyle<SelectToken, CSSObject> = (token) => {
   const { componentCls } = token
 
   return {
@@ -16,8 +18,8 @@ const genSelectInputCustomizeStyle: GenerateStyle<SelectToken> = (token) => {
       },
 
       [`${componentCls}-content`]: {
-        'margin': 0,
-        'padding': 0,
+        margin: 0,
+        padding: 0,
 
         '&-value': {
           display: 'none',

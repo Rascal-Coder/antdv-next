@@ -53,7 +53,9 @@ export type CardClassNamesType = SemanticClassNamesType<CardProps, CardSemanticC
 
 export type CardStylesType = SemanticStylesType<CardProps, CardSemanticStyles>
 
-export interface CardProps extends ComponentBaseProps {
+export interface CardProps extends ComponentBaseProps,
+  /* @vue-ignore */
+  CardEmitsProps {
   title?: VueNode
   extra?: VueNode
   /** @deprecated Please use `variant` instead */
@@ -83,7 +85,10 @@ export interface CardProps extends ComponentBaseProps {
 export interface CardEmits {
   'tabChange': (key: string) => void
   'update:activeTabKey': (key: string) => void
-  [key: string]: (...args: any[]) => void
+}
+export interface CardEmitsProps {
+  onTabChange?: CardEmits['tabChange']
+  'onUpdate:activeTabKey'?: CardEmits['update:activeTabKey']
 }
 
 export interface CardSlots {
@@ -179,6 +184,7 @@ const Card = defineComponent<
 
     const onTabChange = (key: string) => {
       emit('tabChange', key)
+      emit('update:activeTabKey', key)
     }
 
     const [hashId, cssVarCls] = useStyle(prefixCls)

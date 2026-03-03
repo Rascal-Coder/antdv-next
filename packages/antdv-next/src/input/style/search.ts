@@ -1,7 +1,9 @@
+import type { CSSObject } from '@antdv-next/cssinjs'
+
 import type { FullToken, GenerateStyle } from '../../theme/internal'
 import { genStyleHooks } from '../../theme/internal'
 
-const genSearchStyle: GenerateStyle<FullToken<'Input'>> = (token) => {
+const genSearchStyle: GenerateStyle<FullToken<'Input'>, CSSObject> = (token) => {
   const { componentCls } = token
 
   const btnCls = `${componentCls}-btn`
@@ -13,7 +15,7 @@ const genSearchStyle: GenerateStyle<FullToken<'Input'>> = (token) => {
       // =========================== Button ===========================
       [btnCls]: {
         '&-filled': {
-          'background': token.colorFillTertiary,
+          background: token.colorFillTertiary,
 
           '&:not(:disabled)': {
             '&:hover': {
@@ -30,6 +32,4 @@ const genSearchStyle: GenerateStyle<FullToken<'Input'>> = (token) => {
   }
 }
 
-export default genStyleHooks(['Input', 'Search'], (token) => {
-  return [genSearchStyle(token)]
-})
+export default genStyleHooks(['Input', 'Search'], genSearchStyle)

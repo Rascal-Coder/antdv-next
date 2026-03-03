@@ -1,9 +1,10 @@
+import type { CSSObject } from '@antdv-next/cssinjs'
 import type { UploadToken } from '.'
 
 import type { GenerateStyle } from '../../theme/internal'
 import { unit } from '@antdv-next/cssinjs'
 
-const genDraggerStyle: GenerateStyle<UploadToken> = (token) => {
+const genDraggerStyle: GenerateStyle<UploadToken, CSSObject> = (token) => {
   const { componentCls, iconCls } = token
 
   return {
@@ -24,11 +25,11 @@ const genDraggerStyle: GenerateStyle<UploadToken> = (token) => {
         },
 
         [`${componentCls}-btn`]: {
-          'display': 'table',
-          'width': '100%',
-          'height': '100%',
-          'outline': 'none',
-          'borderRadius': token.borderRadiusLG,
+          display: 'table',
+          width: '100%',
+          height: '100%',
+          outline: 'none',
+          borderRadius: token.borderRadiusLG,
 
           '&:focus-visible': {
             outline: `${unit(token.lineWidthFocus)} solid ${token.colorPrimaryBorder}`,

@@ -17,6 +17,7 @@ import { useComponentBaseConfig } from '../config-provider/context'
 import { usePanelRef } from '../watermark/context.ts'
 import DrawerPanel from './DrawerPanel'
 import useStyle from './style'
+
 import useFocusable from './useFocusable.ts'
 
 const _SizeTypes = ['default', 'large'] as const
@@ -36,10 +37,11 @@ export interface DrawerResizableConfig {
 export interface DrawerProps
   extends Omit<
     VcDrawerProps,
-'maskStyle' | 'destroyOnHidden' | 'rootClassName' | 'mask' | 'resizable' | 'classNames' | 'styles' | 'onClose' | 'onKeyUp' | 'onKeyDown' | 'onMouseEnter' | 'onMouseLeave' | 'onMouseOver' | 'onClick' | OmitFocusType
+'maskStyle' | 'destroyOnHidden' | 'rootClassName' | 'mask' | 'resizable' | 'classNames' | 'styles' | 'onClose' | 'onKeyUp' | 'onKeyDown' | 'onMouseEnter' | 'onMouseLeave' | 'onMouseOver' | 'onClick' | 'maskClosable' | OmitFocusType
   >,
-  Omit<DrawerPanelProps, 'prefixCls' | 'ariaId' | 'onClose'>
-{
+  Omit<DrawerPanelProps, 'prefixCls' | 'ariaId' | 'onClose'>,
+  /* @vue-ignore */
+  DrawerEmitsProps {
   size?: sizeType | number | string
   resizable?: boolean | DrawerResizableConfig
   rootClass?: string
@@ -52,6 +54,8 @@ export interface DrawerProps
    */
   destroyOnHidden?: boolean
   mask?: MaskType
+  /** @deprecated Please use `mask.closable` instead */
+  maskClosable?: boolean
   focusable?: FocusableConfig
 }
 
@@ -65,7 +69,17 @@ export interface DrawerEmits {
   'mouseleave': (e: MouseEvent) => void
   'mouseover': (e: MouseEvent) => void
   'click': (e: MouseEvent) => void
-  [key: string]: (...args: any[]) => void
+}
+export interface DrawerEmitsProps {
+  'onUpdate:open'?: DrawerEmits['update:open']
+  onAfterOpenChange?: DrawerEmits['afterOpenChange']
+  onClose?: DrawerEmits['close']
+  onKeydown?: DrawerEmits['keydown']
+  onKeyup?: DrawerEmits['keyup']
+  onMouseenter?: DrawerEmits['mouseenter']
+  onMouseleave?: DrawerEmits['mouseleave']
+  onMouseover?: DrawerEmits['mouseover']
+  onClick?: DrawerEmits['click']
 }
 
 export interface DrawerSlots {
@@ -111,6 +125,7 @@ const Drawer = defineComponent<
       classes,
       styles,
       focusable,
+      maskClosable,
     } = toPropsRefs(
       props,
       'zIndex',
@@ -118,6 +133,7 @@ const Drawer = defineComponent<
       'classes',
       'styles',
       'focusable',
+      'maskClosable',
     )
 
     const [hashId, cssVarCls] = useStyle(prefixCls)
@@ -175,7 +191,7 @@ const Drawer = defineComponent<
     const [zIndex, contextZIndex] = useZIndex('Drawer', customZIndex)
 
     // ============================ Mask ============================
-    const [mergedMask, maskBlurClassName] = useMergedMask(drawerMask, contextMask, prefixCls)
+    const [mergedMask, maskBlurClassName, mergedMaskClosable] = useMergedMask(drawerMask, contextMask, prefixCls, maskClosable)
     // ========================== Focusable =========================
     const mergedFocusable = useFocusable(focusable, computed(() => {
       return props?.getContainer !== false && mergedMask.value
@@ -186,6 +202,7 @@ const Drawer = defineComponent<
         zIndex: zIndex.value,
         mask: mergedMask.value,
         focusable: mergedFocusable.value,
+        maskClosable: mergedMaskClosable.value,
       } as DrawerProps
     })
 
@@ -250,9 +267,9 @@ const Drawer = defineComponent<
               {...restAttrs as any}
               {...rest as any}
               prefixCls={prefixCls.value}
-              onClose={() => {
+              onClose={(e) => {
                 emit('update:open', false)
-                emit('close')
+                emit('close', e)
               }}
               onClick={(e) => {
                 emit('click', e)
@@ -288,6 +305,7 @@ const Drawer = defineComponent<
               }}
               open={open}
               mask={mergedMask.value}
+              maskClosable={mergedMaskClosable.value}
               push={push}
               size={drawerSize.value}
               defaultSize={defaultSize}
@@ -316,9 +334,9 @@ const Drawer = defineComponent<
                 size={size}
                 ariaId={ariaId}
                 v-slots={slots}
-                onClose={() => {
+                onClose={(e) => {
                   emit('update:open', false)
-                  emit('close')
+                  emit('close', e)
                 }}
               />
             </VcDrawer>

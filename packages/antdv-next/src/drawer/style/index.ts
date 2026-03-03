@@ -1,3 +1,4 @@
+import type { CSSObject } from '@antdv-next/cssinjs'
 import type { FullToken, GenerateStyle, GetDefaultToken } from '../../theme/internal'
 
 import { unit } from '@antdv-next/cssinjs'
@@ -31,7 +32,7 @@ export interface ComponentToken {
 export interface DrawerToken extends FullToken<'Drawer'> {}
 
 // =============================== Base ===============================
-const genDrawerStyle: GenerateStyle<DrawerToken> = (token) => {
+const genDrawerStyle: GenerateStyle<DrawerToken, CSSObject> = (token) => {
   const {
     borderRadiusSM,
     componentCls,
@@ -66,11 +67,11 @@ const genDrawerStyle: GenerateStyle<DrawerToken> = (token) => {
 
   return {
     [componentCls]: {
-      'position': 'fixed',
-      'inset': 0,
-      'zIndex': zIndexPopup,
-      'pointerEvents': 'none',
-      'color': colorText,
+      position: 'fixed',
+      inset: 0,
+      zIndex: zIndexPopup,
+      pointerEvents: 'none',
+      color: colorText,
 
       '&-pure': {
         position: 'relative',
@@ -112,10 +113,10 @@ const genDrawerStyle: GenerateStyle<DrawerToken> = (token) => {
 
       // ==================== Content =====================
       [wrapperCls]: {
-        'position': 'absolute',
-        'zIndex': zIndexPopup,
-        'maxWidth': '100vw',
-        'transition': `all ${motionDurationSlow}`,
+        position: 'absolute',
+        zIndex: zIndexPopup,
+        maxWidth: '100vw',
+        transition: `all ${motionDurationSlow}`,
 
         '&-hidden': {
           display: 'none',
@@ -164,13 +165,13 @@ const genDrawerStyle: GenerateStyle<DrawerToken> = (token) => {
 
       // Header
       [`${componentCls}-header`]: {
-        'display': 'flex',
-        'flex': 0,
-        'alignItems': 'center',
-        'padding': `${unit(padding)} ${unit(paddingLG)}`,
-        'fontSize': fontSizeLG,
-        'lineHeight': lineHeightLG,
-        'borderBottom': `${unit(lineWidth)} ${lineType} ${colorSplit}`,
+        display: 'flex',
+        flex: 0,
+        alignItems: 'center',
+        padding: `${unit(padding)} ${unit(paddingLG)}`,
+        fontSize: fontSizeLG,
+        lineHeight: lineHeightLG,
+        borderBottom: `${unit(lineWidth)} ${lineType} ${colorSplit}`,
 
         '&-title': {
           display: 'flex',
@@ -186,25 +187,25 @@ const genDrawerStyle: GenerateStyle<DrawerToken> = (token) => {
       },
 
       [`${componentCls}-close`]: {
-        'display': 'inline-flex',
-        'width': calc(fontSizeLG).add(paddingXS).equal(),
-        'height': calc(fontSizeLG).add(paddingXS).equal(),
-        'borderRadius': borderRadiusSM,
-        'justifyContent': 'center',
-        'alignItems': 'center',
-        'color': colorIcon,
-        'fontWeight': fontWeightStrong,
-        'fontSize': fontSizeLG,
-        'fontStyle': 'normal',
-        'lineHeight': 1,
-        'textAlign': 'center',
-        'textTransform': 'none',
-        'textDecoration': 'none',
-        'background': 'transparent',
-        'border': 0,
-        'cursor': 'pointer',
-        'transition': `all ${motionDurationMid}`,
-        'textRendering': 'auto',
+        display: 'inline-flex',
+        width: calc(fontSizeLG).add(paddingXS).equal(),
+        height: calc(fontSizeLG).add(paddingXS).equal(),
+        borderRadius: borderRadiusSM,
+        justifyContent: 'center',
+        alignItems: 'center',
+        color: colorIcon,
+        fontWeight: fontWeightStrong,
+        fontSize: fontSizeLG,
+        fontStyle: 'normal',
+        lineHeight: 1,
+        textAlign: 'center',
+        textTransform: 'none',
+        textDecoration: 'none',
+        background: 'transparent',
+        border: 0,
+        cursor: 'pointer',
+        transition: `all ${motionDurationMid}`,
+        textRendering: 'auto',
 
         [`&${componentCls}-close-end`]: {
           marginInlineStart: marginXS,
@@ -258,11 +259,11 @@ const genDrawerStyle: GenerateStyle<DrawerToken> = (token) => {
 
       // ==================== Resizable ===================
       [draggerCls]: {
-        'position': 'absolute',
-        'zIndex': 1,
-        'backgroundColor': 'transparent',
-        'userSelect': 'none',
-        'pointerEvents': 'auto',
+        position: 'absolute',
+        zIndex: 1,
+        backgroundColor: 'transparent',
+        userSelect: 'none',
+        pointerEvents: 'auto',
 
         '&:hover': {
           backgroundColor: token.colorPrimary,

@@ -1,18 +1,20 @@
+import type { CSSObject } from '@antdv-next/cssinjs'
+
 import type { GenerateStyle } from '../../theme/internal'
 import type { InputToken } from './token'
 import { genStyleHooks, mergeToken } from '../../theme/internal'
 import { initComponentToken, initInputToken } from './token'
 
 // =============================== OTP ================================
-const genOTPStyle: GenerateStyle<InputToken> = (token) => {
+const genOTPStyle: GenerateStyle<InputToken, CSSObject> = (token) => {
   const { componentCls, paddingXS } = token
 
   return {
     [componentCls]: {
-      'display': 'inline-flex',
-      'alignItems': 'center',
-      'flexWrap': 'nowrap',
-      'columnGap': paddingXS,
+      display: 'inline-flex',
+      alignItems: 'center',
+      flexWrap: 'nowrap',
+      columnGap: paddingXS,
 
       [`${componentCls}-input-wrapper`]: {
         position: 'relative',
@@ -30,7 +32,7 @@ const genOTPStyle: GenerateStyle<InputToken> = (token) => {
         },
         [`${componentCls}-mask-input[type=number]::-webkit-inner-spin-button`]: {
           '-webkit-appearance': 'none',
-          'margin': 0,
+          margin: 0,
         },
         [`${componentCls}-mask-input[type=number]`]: {
           '-moz-appearance': 'textfield',
