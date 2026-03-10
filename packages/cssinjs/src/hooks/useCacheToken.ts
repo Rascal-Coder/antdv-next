@@ -1,12 +1,13 @@
 import type { Ref } from 'vue'
 import type Theme from '../theme/Theme'
+import type { Nonce } from '../util'
 import type { ExtractStyle } from './useGlobalCache'
 import canUseDom from '@v-c/util/dist/Dom/canUseDom'
 import { updateCSS } from '@v-c/util/dist/Dom/dynamicCSS'
 import { computed } from 'vue'
 import { collectStyleText } from '../ssr/styleCollector'
 import { ATTR_MARK, ATTR_TOKEN, CSS_IN_JS_INSTANCE, useStyleContext } from '../StyleContext'
-import { flattenToken, memoResult, token2key, toStyleStr } from '../util'
+import { flattenToken, injectCSPNonce, memoResult, token2key, toStyleStr } from '../util'
 import { transformToken } from '../util/css-variables'
 import hash from '../util/resolveHash'
 import { useGlobalCache } from './useGlobalCache'
@@ -65,6 +66,7 @@ export interface Option<DerivativeToken, DesignToken> {
     /** Key for current theme. Useful for customizing and should be unique */
     key: string
   }
+  nonce?: Nonce
 }
 
 const tokenKeys = new Map<string, number>()
@@ -192,6 +194,7 @@ export default function useCacheToken<
   const formatToken = computed(() => option.value.formatToken)
   const compute = computed(() => option.value.getComputedToken)
   const cssVar = computed(() => option.value.cssVar)
+  const nonce = computed(() => option.value.nonce)
 
   const resolvedTokens = computed(() => tokens.value.map(token => (typeof token === 'function' ? token() : token)))
 
@@ -257,17 +260,22 @@ export default function useCacheToken<
       if (!cssVarsStr) {
         return
       }
+      let mergedCSSConfig: Parameters<typeof updateCSS>[2] = {
+        mark: ATTR_MARK,
+        prepend: 'queue',
+        attachTo: styleContext.value.container,
+        priority: -999,
+      }
+
+      mergedCSSConfig = injectCSPNonce(mergedCSSConfig, nonce.value)
+
       const style = updateCSS(
         cssVarsStr,
         hash(`css-var-${themeKey}`),
-        {
-          mark: ATTR_MARK,
-          prepend: 'queue',
-          attachTo: styleContext.value.container,
-          priority: -999,
-        },
+        mergedCSSConfig,
       )
-        ;(style as any)[CSS_IN_JS_INSTANCE] = styleContext.value.cache.instanceId
+
+      ;(style as any)[CSS_IN_JS_INSTANCE] = styleContext.value.cache.instanceId
       // Used for `useCacheToken` to remove on batch when token removed
       style.setAttribute(ATTR_TOKEN, themeKey)
     },

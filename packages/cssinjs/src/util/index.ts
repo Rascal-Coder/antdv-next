@@ -210,4 +210,28 @@ export function isNonNullable<T>(val: T): val is NonNullable<T> {
   return val !== undefined && val !== null
 }
 
+export type Nonce = string | (() => string)
+
+/**
+ * Resolve nonce and merge it into the dynamic CSS config.
+ */
+export function injectCSPNonce<T extends { csp?: { nonce?: string } }>(
+  config: T,
+  nonce: Nonce | undefined,
+): T {
+  const nonceStr = typeof nonce === 'function' ? nonce() : nonce
+
+  if (nonceStr) {
+    return {
+      ...config,
+      csp: {
+        ...config.csp,
+        nonce: nonceStr,
+      },
+    }
+  }
+
+  return config
+}
+
 export { hash }

@@ -1,4 +1,5 @@
 import type { Ref } from 'vue'
+import type { Nonce } from '../util'
 import type { TokenWithCSSVar } from '../util/css-variables'
 import type { ExtractStyle } from './useGlobalCache'
 import canUseDom from '@v-c/util/dist/Dom/canUseDom'
@@ -6,7 +7,7 @@ import { removeCSS, updateCSS } from '@v-c/util/dist/Dom/dynamicCSS'
 import { computed } from 'vue'
 import { collectStyleText } from '../ssr/styleCollector'
 import { ATTR_MARK, ATTR_TOKEN, CSS_IN_JS_INSTANCE, useStyleContext } from '../StyleContext'
-import { isClientSide, toStyleStr } from '../util'
+import { injectCSPNonce, isClientSide, toStyleStr } from '../util'
 import { transformToken } from '../util/css-variables'
 import { useGlobalCache } from './useGlobalCache'
 import { uniqueHash } from './useStyleRegister'
@@ -29,6 +30,7 @@ export interface CSSVarRegisterConfig {
   scope?: string | string[]
   token: any
   hashId?: string
+  nonce?: Nonce
 }
 
 export const extract: ExtractStyle<CSSVarCacheValue<any>> = (
@@ -119,12 +121,16 @@ export default function useCSSVarRegister<V, T extends Record<string, V>>(
       }
 
       const context = styleContext.value
-      const style = updateCSS(cssVarsStr, styleId, {
+      let mergedCSSConfig: Parameters<typeof updateCSS>[2] = {
         mark: ATTR_MARK,
         prepend: 'queue',
         attachTo: context.container,
         priority: -999,
-      })
+      }
+
+      mergedCSSConfig = injectCSPNonce(mergedCSSConfig, config.value.nonce)
+
+      const style = updateCSS(cssVarsStr, styleId, mergedCSSConfig)
 
       ;(style as any)[CSS_IN_JS_INSTANCE] = context.cache.instanceId
       // Used for `useCacheToken` to remove on batch when token removed

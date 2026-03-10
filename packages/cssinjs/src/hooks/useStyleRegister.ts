@@ -5,6 +5,7 @@ import type { Linter } from '../linters'
 import type { HashPriority } from '../StyleContext'
 import type Theme from '../theme/Theme'
 import type { Transformer } from '../transformers/interface.ts'
+import type { Nonce } from '../util'
 import type { ExtractStyle } from './useGlobalCache'
 import { removeCSS, updateCSS } from '@v-c/util/dist/Dom/dynamicCSS'
 
@@ -18,7 +19,7 @@ import {
   CSS_IN_JS_INSTANCE,
   useStyleContext,
 } from '../StyleContext'
-import { isClientSide, isNonNullable, toStyleStr, where } from '../util'
+import { injectCSPNonce, isClientSide, isNonNullable, toStyleStr, where } from '../util'
 import {
   CSS_FILE_STYLE,
   existPath,
@@ -387,7 +388,7 @@ export default function useStyleRegister(
     path: string[]
     hashId?: string
     layer?: LayerConfig
-    nonce?: string | (() => string)
+    nonce?: Nonce
     clientOnly?: boolean
     /**
      * Tell cssinjs the insert order of style.
@@ -482,18 +483,14 @@ export default function useStyleRegister(
       const { layer: enableLayer, container, autoPrefix, cache } = styleContext.value
       const { nonce } = info.value
 
-      const mergedCSSConfig: Parameters<typeof updateCSS>[2] = {
+      let mergedCSSConfig: Parameters<typeof updateCSS>[2] = {
         mark: ATTR_MARK,
         prepend: enableLayer ? false : 'queue',
         attachTo: container,
         priority,
       }
 
-      const nonceStr = typeof nonce === 'function' ? nonce() : nonce
-
-      if (nonceStr) {
-        mergedCSSConfig.csp = { nonce: nonceStr }
-      }
+      mergedCSSConfig = injectCSPNonce(mergedCSSConfig, nonce)
 
       // ================= Split Effect Style =================
       // We will split effectStyle here since @layer should be at the top level

@@ -11,9 +11,10 @@ import {
   ref,
 } from 'vue'
 import extractStyle from '../src/extractStyle'
+import useCacheToken from '../src/hooks/useCacheToken'
 import useCSSVarRegister from '../src/hooks/useCSSVarRegister'
 import useStyleRegister from '../src/hooks/useStyleRegister'
-import { ATTR_MARK, createCache } from '../src/StyleContext'
+import { ATTR_MARK, ATTR_TOKEN, createCache } from '../src/StyleContext'
 import { createTheme } from '../src/theme'
 import { token2key, unit } from '../src/util'
 import { mountWithStyleProvider } from './utils'
@@ -561,5 +562,97 @@ describe('css variables', () => {
     expect(cssVarText).toMatch(/\.orange\.box\s*,[^{}]*\.orange\.container/)
 
     wrapper.unmount()
+  })
+
+  describe('nonce', () => {
+    function testCacheTokenNonce(name: string, nonce: string | (() => string)) {
+      it(`applies nonce for useCacheToken with ${name}`, async () => {
+        const CacheTokenNonceBox = defineComponent({
+          name: 'CacheTokenNonceBox',
+          setup() {
+            useCacheToken<DerivativeToken, DesignToken>(
+              ref(theme),
+              computed(() => [defaultDesignToken]),
+              computed(() => ({
+                salt: '',
+                cssVar: {
+                  prefix: 'rc',
+                  key: 'nonce-cache-token',
+                },
+                nonce,
+              })),
+            )
+
+            return () => h('div')
+          },
+        })
+
+        const wrapper = mountWithStyleProvider(CacheTokenNonceBox)
+        await nextTick()
+
+        const style = document.head.querySelector(
+          `style[${ATTR_TOKEN}="nonce-cache-token"]`,
+        ) as HTMLStyleElement | null
+
+        expect(style).not.toBeNull()
+        expect(style?.nonce).toBe('bamboo')
+
+        wrapper.unmount()
+      })
+    }
+
+    function testCSSVarRegisterNonce(name: string, nonce: string | (() => string)) {
+      it(`applies nonce for useCSSVarRegister with ${name}`, async () => {
+        const CSSVarNonceBox = defineComponent({
+          name: 'CSSVarNonceBox',
+          setup() {
+            const cacheToken = useCacheToken<DerivativeToken, DesignToken>(
+              ref(theme),
+              computed(() => [defaultDesignToken]),
+              computed(() => ({
+                salt: '',
+                cssVar: {
+                  prefix: 'rc',
+                  key: 'nonce-css-var-token',
+                },
+              })),
+            )
+
+            useCSSVarRegister(
+              computed(() => ({
+                path: ['NonceBox'],
+                key: 'nonce-css-var',
+                token: cacheToken.value[2],
+                prefix: 'rc-nonce',
+                hashId: cacheToken.value[1],
+                nonce,
+              })),
+              () => ({ testColor: '#ff0000' }),
+            )
+
+            return () => h('div')
+          },
+        })
+
+        const wrapper = mountWithStyleProvider(CSSVarNonceBox)
+        await nextTick()
+
+        const style = Array.from(
+          document.head.querySelectorAll(`style[${ATTR_TOKEN}="nonce-css-var"]`),
+        ).find(style =>
+          style.textContent?.includes('--rc-nonce-test-color'),
+        ) as HTMLStyleElement | undefined
+
+        expect(style).toBeDefined()
+        expect(style?.nonce).toBe('bamboo')
+
+        wrapper.unmount()
+      })
+    }
+
+    testCacheTokenNonce('string nonce', 'bamboo')
+    testCacheTokenNonce('function nonce', () => 'bamboo')
+    testCSSVarRegisterNonce('string nonce', 'bamboo')
+    testCSSVarRegisterNonce('function nonce', () => 'bamboo')
   })
 })
