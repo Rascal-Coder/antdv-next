@@ -138,7 +138,7 @@ export interface InputNumberSlots {
   default?: () => any
 }
 
-const omitKeys: string[] = [
+const omitKeys: (keyof InputNumberProps)[] = [
   'classes',
   'styles',
   'rootClass',
@@ -156,16 +156,16 @@ const omitKeys: string[] = [
   'onInput',
   'onPressEnter',
   'onStep',
-  'onBeforeInput',
+  'onBeforeinput',
   'keyboard',
   'onClick',
   'onFocus',
-  'onMouseDown',
-  'onMouseUp',
-  'onMouseLeave',
-  'onMouseMove',
-  'onMouseEnter',
-  'onMouseOut',
+  'onMousedown',
+  'onMouseup',
+  'onMouseleave',
+  'onMousemove',
+  'onMouseenter',
+  'onMouseout',
   'value',
   'defaultValue',
   'onChange',
@@ -278,8 +278,6 @@ const InputNumber = defineComponent<
       useToProps(mergedProps),
     )
 
-    const { className, style, restAttrs } = getAttrStyleAndClass(attrs)
-    const restProps = omit(props, omitKeys)
     const hasLegacyAddon = computed(() => !!(props.addonBefore || props.addonAfter))
     const upIcon = computed(() => {
       let icon: VueNode = props.mode === 'spinner' ? <PlusOutlined /> : <UpOutlined />
@@ -299,6 +297,7 @@ const InputNumber = defineComponent<
     const appliedRootClass = computed(() => (hasLegacyAddon.value ? undefined : rootClass.value))
 
     const classesValue = computed(() => {
+      const { className } = getAttrStyleAndClass(attrs)
       return clsx(
         contextClassName.value,
         className,
@@ -320,11 +319,14 @@ const InputNumber = defineComponent<
       )
     })
 
-    const mergedStyle = computed(() => ({
-      ...mergedStyles.value.root,
-      ...contextStyle.value,
-      ...style,
-    }))
+    const mergedStyle = computed(() => {
+      const { style } = getAttrStyleAndClass(attrs)
+      return {
+        ...mergedStyles.value.root,
+        ...contextStyle.value,
+        ...style,
+      }
+    })
 
     const renderAddon = (node?: VueNode) => {
       if (!node) {
@@ -362,6 +364,8 @@ const InputNumber = defineComponent<
     const handleBeforeInput: InputNumberEmits['beforeinput'] = e => emit('beforeinput', e)
 
     return () => {
+      const { restAttrs } = getAttrStyleAndClass(attrs)
+      const restProps = omit(props, omitKeys)
       const { min, max, step } = props
       const prefixNode = getSlotPropsFnRun(slots, props, 'prefix')
       const suffixSlot = getSlotPropsFnRun(slots, props, 'suffix')

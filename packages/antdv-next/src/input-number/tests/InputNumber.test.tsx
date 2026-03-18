@@ -240,4 +240,16 @@ describe('inputNumber', () => {
     const input = wrapper.find('input')
     expect(input.element.value).toBe('1.0000000000000001')
   })
+
+  it('should support dynamic placeholder', async () => {
+    const placeholder = ref('请输入')
+    const wrapper = mount(() => h(InputNumber, { placeholder: placeholder.value }))
+
+    const input = wrapper.find('input')
+    expect(input.attributes('placeholder')).toBe('请输入')
+
+    placeholder.value = '请填写数字'
+    await nextTick()
+    expect(input.attributes('placeholder')).toBe('请填写数字')
+  })
 })
